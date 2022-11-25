@@ -1,0 +1,2 @@
+for largest_and_smallest I tested with (17, 1, 6), (1, 17, 7), (1, 1, 2), (-1, -1, -1)) and (0, 0, 0) to make sure
+it worked irregardless of order or sign
