@@ -72,3 +72,60 @@ def test_bilinear_interpolation():
 
 def test_resize():
     assert resize([255], 2, 2) == [[255, 255], [255, 255]]
+    assert resize([[0, 50], [100, 200]], 3, 4) == [
+        [0, 17, 33, 50], [50, 75, 100, 125], [100, 133, 167, 200]]
+
+
+def test_rotate_90():
+    identity_matrix = [[1, 0, 0],
+                       [0, 1, 0],
+                       [0, 0, 1]]
+    assert rotate_90(identity_matrix, "R") == [[0, 0, 1],
+                                               [0, 1, 0],
+                                               [1, 0, 0]]
+
+    assert rotate_90([255], "R") == rotate_90([255], "L") == [255]
+
+    # Tom's Tests
+
+    image: Image = [[1, 2, 3], [4, 5, 6]]
+    dir = 'R'
+    result = [[4, 1],
+              [5, 2],
+              [6, 3]]
+    assert rotate_90(image, dir) == result
+    image = [[1, 2, 3], [4, 5, 6]]
+    dir = 'L'
+    result = [[3, 6],
+              [2, 5],
+              [1, 4]]
+    assert rotate_90(image, dir) == result
+    image = [[[1, 2, 3], [4, 5, 6]],
+             [[0, 5, 9], [255, 200, 7]]]
+    dir = 'L'
+    result = [[[4, 5, 6], [255, 200, 7]],
+              [[1, 2, 3], [0, 5, 9]]]
+    assert rotate_90(image, dir) == result
+    image = [[0], [1], [2], [3]]
+    result = [[3, 2, 1, 0]]
+    assert rotate_90(image, 'R') == result
+    image = [[3, 2, 1, 0]]
+    result = [[3], [2], [1], [0]]
+    assert rotate_90(image, 'R') == result
+    image = [[[1, 58, 3], [1, 2, 3], [1, 2, 3], [2, 3, 3], [1, 2, 3], [100, 32, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3], [3, 3, 3], [34, 2, 3], [100, 32, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 77, 3], [
+                 2, 3, 3], [1, 15, 3], [100, 32, 3]],
+             [[1, 24, 3], [1, 2, 3], [1, 2, 3], [2, 3, 4], [1, 66, 3], [100, 32, 3]]]
+    assert rotate_90(
+        rotate_90(rotate_90(rotate_90(image, 'R'), 'R'), 'R'), 'R') == image
+    assert rotate_90(rotate_90(image, 'R'), 'R') == rotate_90(
+        rotate_90(image, 'L'), 'L')
+
+
+def test_get_edges():
+    assert get_edges([[200, 50, 200]], 3, 3, 10) == [[255, 0, 255]]
+
+
+def test_quantize():
+    assert quantize([[0, 50, 100], [150, 200, 250]], 8) == [[0, 36, 109], [146, 219, 255]]

@@ -3,6 +3,7 @@
 # WRITER : David Ruppin, ruppin, 322296336
 # EXERCISE : intro2cs ex5 2022-2023
 #################################################################
+import sys
 from math import floor, ceil
 
 ##############################################################################
@@ -97,43 +98,153 @@ def bilinear_interpolation(image: SingleChannelImage, y: float, x: float) -> int
 
 # RESIZE HELPER FUNCTIONS #
 def init_resized_image(image: SingleChannelImage, new_height: int, new_width: int) -> SingleChannelImage:
-    new_image = [[0 for j in range(new_width)] for i in range(new_height)]
-    # Iterating over the corners
-    for corner in [(0, 0), (0, -1), (-1, 0), (-1, -1)]:
-        new_image[corner[0]][corner[1]] = image[corner[0]][corner[1]]
+    new_image = [[image[0] if type(image[0]) is int else 0 for j in range(new_width)] for i in range(new_height)]
+    # Iterating over the corners if they exist
+    if type(image[0]) is list:
+        for corner in [(0, 0), (0, -1), (-1, 0), (-1, -1)]:
+            new_image[corner[0]][corner[1]] = image[corner[0]][corner[1]]
 
     return new_image
+
 
 # END OF RESIZE HELPER FUNCTIONS #
 
 
 def resize(image: SingleChannelImage, new_height: int, new_width: int) -> SingleChannelImage:
     new_image = init_resized_image(image, new_height, new_width)
-    for row in (1, new_height - 1):
-        for col in (1, new_width - 1):
-            # TODO - WATCH OUT FOR POSSIBLE ZEROS HERE
-            proportionate_coord = (col * (len(image[0]) - 1) / (new_height - 1),
-                                   row * (len(image) - 1) / (new_height - 1))
-            new_image[row][col] = bilinear_interpolation(image, *proportionate_coord)
+    if type(image[0]) != int:
+        for row in range(0, new_height):
+            for col in range(0, new_width):
+                # TODO - WATCH OUT FOR POSSIBLE ZEROS HERE
+                proportionate_coord = row * (len(image) - 1) / (new_height - 1), \
+                                      col * (len(image[0]) - 1) / (new_width - 1)
+                new_image[row][col] = bilinear_interpolation(image, *proportionate_coord)
 
     return new_image
 
 
-def rotate_90(image: Image, direction: str) -> Image:
-    ...
+""" 
+    [x, y] ================ [z, x]
+    [z, w] = [x, y, z, w] = [w, y]
+"""
 
+
+# ROTATE_90 HELPER FUNCTIONS #
+def rotate_right(image) -> Image:
+    new_matrix = []
+    for col in range(len(image[0])):
+        new_matrix.append([image[-row][col] for row in range(1, len(image) + 1)])
+
+    return new_matrix
+
+
+# END OF ROTATE_90 HELPER FUNCTIONS #
+
+def rotate_90(image: Image, direction: str) -> Image:
+    # If the image is a single pixel, return it
+    if type(image[0]) is int:
+        return image
+
+    if direction.upper() == "L":
+        for i in range(3):
+            image = rotate_right(image)
+    else:
+        image = rotate_right(image)
+
+    return image
+
+
+# GET_EDGES HELPER FUNCTIONS #
+def get_square_around_point_average(image, row, col, square_size) -> float:
+    block_pixels = [
+        get_single_channel_pixel_bound_safe(image, row + i, row + j, image[row][col])
+        for j in range(-(square_size // 2), (square_size // 2) + 1) for i in
+        range(-(square_size // 2), (square_size // 2) + 1)]
+
+    return sum(block_pixels) / len(block_pixels)
+
+
+# END OF GET_EDGES HELPER FUNCTIONS #
 
 def get_edges(image: SingleChannelImage, blur_size: int, block_size: int, c: float) -> SingleChannelImage:
-    ...
+    # Creating the blurred image and if the image is a single pixel use it as the new image
+    blurred_image = apply_kernel(image, blur_kernel(blur_size))
+
+    new_image = [[0 if get_square_around_point_average(blurred_image, row, col, block_size) - c > blurred_image[row][
+        col] else 255
+                  for col in range(len(blurred_image[0]))] for row in range(len(blurred_image))]
+
+    return new_image
 
 
 def quantize(image: SingleChannelImage, N: int) -> SingleChannelImage:
-    ...
+    new_image = [
+        [round(floor(pixel * (N / 256)) * (255 / (N - 1))) for pixel in row] for row in image
+    ]
+
+    return new_image
 
 
 def quantize_colored_image(image: ColoredImage, N: int) -> ColoredImage:
-    ...
+    # new_image = [
+    #     [[round(floor(channel * (N / 256)) * (255 / (N - 1))) for channel in pixel] for pixel in row] for row in image
+    # ]
+
+    seperated = separate_channels(image)
+    return combine_channels([quantize(row) for row in seperated])
+
+
+# MAIN HELPER FUNCTIONS #
+def user_convert_to_grayscale(image):
+    if type(image[0][0] is int):
+        print("Already grayscaled bro")
+    else:
+        image = RGB2grayscale(image)
+    return image
+
+
+def user_blur(image):
+    kernel_size = input("Please choose a positive odd kernel size")
+    if kernel_size.isnumeric() and int(kernel_size) > 0 and int(kernel_size) % 2 == 1:
+        kernel = blur_kernel(int(kernel_size))
+        seperated_channels = separate_channels(image)
+        image = combine_channels([apply_kernel(channel, kernel) for channel in seperated_channels])
+    else:
+        print("Bad input bro...")
+
+    return image
+
+
+def user_resize(image):
+    user_size = input("")
+
+# END OF MAIN HELPER FUNCTIONS #
+
+USER_MENU_PROMPT = "~~~~~ MENU ~~~~~~\n1. convert to black and white\n2. blur\n3. resize\n4. rotate" \
+                   "5. get edges\n6. quantize\n7. show image\n8. quit"
+
+
+
+def main():
+    image = load_image(sys.argv[1])
+
+    decision = ""
+    while decision.lower() not in ["q", "quit", "exit", "8"]:
+        decision = input(USER_MENU_PROMPT).strip()
+        if decision == "1":
+            image = user_convert_to_grayscale(image)
+        elif decision == "2":
+            image = user_blur(image)
+        elif decision == "3":
+            image = user_resize(image)
+
 
 
 if __name__ == '__main__':
-    ...
+    arguments = sys.argv
+
+    if len(arguments) != 2:
+        print("Bad args bro <3 ")
+
+    else:
+        main()
