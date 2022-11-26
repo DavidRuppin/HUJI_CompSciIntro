@@ -186,26 +186,35 @@ def quantize(image: SingleChannelImage, N: int) -> SingleChannelImage:
 
 
 def quantize_colored_image(image: ColoredImage, N: int) -> ColoredImage:
-    # new_image = [
-    #     [[round(floor(channel * (N / 256)) * (255 / (N - 1))) for channel in pixel] for pixel in row] for row in image
-    # ]
-
     seperated = separate_channels(image)
-    return combine_channels([quantize(row) for row in seperated])
+    return combine_channels([quantize(row, N) for row in seperated])
 
 
 # MAIN HELPER FUNCTIONS #
-def user_convert_to_grayscale(image):
-    if type(image[0][0] is int):
-        print("Already grayscaled bro")
+def string_is_positive_integer(suspect: str):
+    if suspect.isnumeric() and int(suspect) > 0:
+        return True
+    return False
+
+
+def string_is_odd_positive_integer(suspect: str):
+    if string_is_positive_integer(suspect) and int(suspect) % 2 == 1:
+        return True
+    return False
+
+
+def user_convert_to_grayscale(image, prompt=True):
+    if type(image[0][0]) is int:
+        if prompt:
+            print("Grayscale already bro")
     else:
         image = RGB2grayscale(image)
     return image
 
 
 def user_blur(image):
-    kernel_size = input("Please choose a positive odd kernel size")
-    if kernel_size.isnumeric() and int(kernel_size) > 0 and int(kernel_size) % 2 == 1:
+    kernel_size = input("Please choose a positive odd kernel size: ")
+    if string_is_odd_positive_integer(kernel_size):
         kernel = blur_kernel(int(kernel_size))
         seperated_channels = separate_channels(image)
         image = combine_channels([apply_kernel(channel, kernel) for channel in seperated_channels])
@@ -216,20 +225,71 @@ def user_blur(image):
 
 
 def user_resize(image):
-    user_size = input("")
+    user_size = input("Please enter two integers greater than 1 seperated by a comma (X,Y): ")
+    width_height_list = user_size.split(",")
+    if len(width_height_list) == 2 and string_is_positive_integer(width_height_list[0]) \
+            and string_is_positive_integer(width_height_list[1]):
+        width, height = int(width_height_list[0]), int(width_height_list[1])
+        image = resize(image, width, height)
+    else:
+        print("Invalid values nerd")
+
+    return image
+
+
+def user_rotate(image):
+    rotation = input("Which way would you like to rotate? (L/R): ")
+    if rotation in ["L", "R"]:
+        image = rotate_90(image, rotation)
+    else:
+        print("Invalid direction bro")
+
+    return image
+
+
+def user_get_edges(image):
+    user_decision = input("Please choose blur size, block size and c value: ").strip()
+    user_decision_split = user_decision.split(",")
+    # Making sure the input is valid, all numbers are in format at that only the third variable can be a float
+    if len(user_decision_split) == 3 and string_is_odd_positive_integer(user_decision_split[0]) \
+            and string_is_odd_positive_integer(user_decision_split[1]) \
+            and string_is_positive_integer(user_decision_split[2].replace(".", "")) \
+            and user_decision_split[2].count(".") <= 1:  # Making sure we don't have a malformed float
+
+        blur_size, block_size = int(user_decision_split[0]), int(user_decision_split[1])
+        c = float(user_decision_split[2])
+
+        image = get_edges(user_convert_to_grayscale(image, prompt=False), blur_size, block_size, c)
+    else:
+        print("Invalid values chum")
+
+    return image
+
+
+def user_quantize(image):
+    user_N = input("Please enter the desired N: ")
+    if string_is_positive_integer(user_N):
+        N = int(user_N)
+        if type(image[0][0]) is int:
+            image = quantize(image, N)
+        else:
+            image = quantize_colored_image(image, N)
+    else:
+        print("Bad value gonk!")
+
+    return image
+
 
 # END OF MAIN HELPER FUNCTIONS #
 
-USER_MENU_PROMPT = "~~~~~ MENU ~~~~~~\n1. convert to black and white\n2. blur\n3. resize\n4. rotate" \
-                   "5. get edges\n6. quantize\n7. show image\n8. quit"
-
+USER_MENU_PROMPT = "~~~~~ MENU ~~~~~~\n1. convert to black and white\n2. blur\n3. resize\n4. rotate\n" \
+                   "5. get edges\n6. quantize\n7. show image\n8. quit\n"
 
 
 def main():
     image = load_image(sys.argv[1])
 
-    decision = ""
-    while decision.lower() not in ["q", "quit", "exit", "8"]:
+    while True:
         decision = input(USER_MENU_PROMPT).strip()
         if decision == "1":
             image = user_convert_to_grayscale(image)
@@ -237,7 +297,18 @@ def main():
             image = user_blur(image)
         elif decision == "3":
             image = user_resize(image)
-
+        elif decision == "4":
+            image = user_rotate(image)
+        elif decision == "5":
+            image = user_get_edges(image)
+        elif decision == "6":
+            image = user_quantize(image)
+        elif decision == "7":
+            show_image(image)
+        elif decision == "8":
+            save_path = input("Where would you like to save the image? ")
+            save_image(image, save_path)
+            return
 
 
 if __name__ == '__main__':
