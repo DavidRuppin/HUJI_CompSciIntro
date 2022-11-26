@@ -3,6 +3,7 @@
 # WRITER : David Ruppin, ruppin, 322296336
 # EXERCISE : intro2cs ex5 2022-2023
 #################################################################
+from math import floor, ceil
 
 ##############################################################################
 #                                   Imports                                  #
@@ -71,14 +72,51 @@ def get_single_channel_pixel_bound_safe(image, row: int, col: int, original_chan
 
 # END OF APPLY KERNEL #
 
+
+# BILINEAR INTERPOLATION HELPER FUNCTIONS #
+
+def get_weighted_pixels(a, b, c, d, x, y):
+    return [a * (1 - x) * (1 - y), b * y * (1 - x), c * x * (1 - y), d * x * y]
+
+
+def get_delta_x_y(x, y) -> tuple:
+    # Returns the ∆x, ∆y
+    return x - floor(x), y - floor(y)
+
+
+# END OF BILINEAR INTERPOLATION HELPER FUNCTIONS #
+
 def bilinear_interpolation(image: SingleChannelImage, y: float, x: float) -> int:
-    width, height = len(image), len(image[0])
-    image_rect_area = width * height
-    weights = [(width - x) * (height - y), y * (width - x), x * (height - y), x * y]
+    # Applies the bilinear interpolation formula on the appropriate pixels
+    a = image[floor(y)][floor(x)]
+    b = image[ceil(y)][floor(x)]
+    c = image[floor(y)][ceil(x)]
+    d = image[ceil(y)][ceil(x)]
+    return round(sum(get_weighted_pixels(a, b, c, d, *get_delta_x_y(x, y))))
+
+
+# RESIZE HELPER FUNCTIONS #
+def init_resized_image(image: SingleChannelImage, new_height: int, new_width: int) -> SingleChannelImage:
+    new_image = [[0 for j in range(new_width)] for i in range(new_height)]
+    # Iterating over the corners
+    for corner in [(0, 0), (0, -1), (-1, 0), (-1, -1)]:
+        new_image[corner[0]][corner[1]] = image[corner[0]][corner[1]]
+
+    return new_image
+
+# END OF RESIZE HELPER FUNCTIONS #
 
 
 def resize(image: SingleChannelImage, new_height: int, new_width: int) -> SingleChannelImage:
-    ...
+    new_image = init_resized_image(image, new_height, new_width)
+    for row in (1, new_height - 1):
+        for col in (1, new_width - 1):
+            # TODO - WATCH OUT FOR POSSIBLE ZEROS HERE
+            proportionate_coord = (col * (len(image[0]) - 1) / (new_height - 1),
+                                   row * (len(image) - 1) / (new_height - 1))
+            new_image[row][col] = bilinear_interpolation(image, *proportionate_coord)
+
+    return new_image
 
 
 def rotate_90(image: Image, direction: str) -> Image:
