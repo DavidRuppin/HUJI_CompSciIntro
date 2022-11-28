@@ -23,12 +23,16 @@ def separate_channels(image: ColoredImage) -> List[SingleChannelImage]:
     col_size = len(image[0])
     channel_size = len(image[0][0])
 
-    return [[[image[row][col][channel] for row in range(row_size)] for col in range(col_size)] for channel in
-            range(channel_size)]
+    # For each channel, iterate over the rows.
+    # In each row create a new array made from pixel[channel] for each pixel (pixel = col)
+    return [[
+        [image[row][col][channel] for col in range(col_size)]
+        for row in range(row_size)]
+        for channel in range(channel_size)]
 
 
 def combine_channels(channels: List[SingleChannelImage]) -> ColoredImage:
-    return separate_channels(channels)
+    return separate_channels(separate_channels(channels))
 
 
 # noinspection PyPep8Naming
@@ -123,12 +127,6 @@ def resize(image: SingleChannelImage, new_height: int, new_width: int) -> Single
     return new_image
 
 
-""" 
-    [x, y] ================ [z, x]
-    [z, w] = [x, y, z, w] = [w, y]
-"""
-
-
 # ROTATE_90 HELPER FUNCTIONS #
 def rotate_right(image) -> Image:
     new_matrix = []
@@ -156,23 +154,37 @@ def rotate_90(image: Image, direction: str) -> Image:
 
 # GET_EDGES HELPER FUNCTIONS #
 def get_square_around_point_average(image, row, col, square_size) -> float:
-    block_pixels = [
-        get_single_channel_pixel_bound_safe(image, row + i, row + j, image[row][col])
-        for j in range(-(square_size // 2), (square_size // 2) + 1) for i in
-        range(-(square_size // 2), (square_size // 2) + 1)]
+    # Iterating over a @square_sized square around (row, col), returning the average from said square
+    pixel_block = []
+    for i in range(-(square_size // 2), (square_size // 2) + 1):
+        for j in range(-(square_size // 2), (square_size // 2) + 1):
+            pixel_block.append(get_single_channel_pixel_bound_safe(image, row + i, col + j, image[row][col]))
 
-    return sum(block_pixels) / len(block_pixels)
+    return sum(pixel_block) / len(pixel_block)
 
 
 # END OF GET_EDGES HELPER FUNCTIONS #
 
 def get_edges(image: SingleChannelImage, blur_size: int, block_size: int, c: float) -> SingleChannelImage:
-    # Creating the blurred image and if the image is a single pixel use it as the new image
+    # Creating the blurred image
     blurred_image = apply_kernel(image, blur_kernel(blur_size))
 
     new_image = [[0 if get_square_around_point_average(blurred_image, row, col, block_size) - c > blurred_image[row][
         col] else 255
                   for col in range(len(blurred_image[0]))] for row in range(len(blurred_image))]
+
+    new_image = []
+    for row in range(len(blurred_image)):
+        row_arr = []
+        for col in range(len(blurred_image[0])):
+            threshold = get_square_around_point_average(blurred_image, row, col, block_size) - c
+            temp = blurred_image[row][col]
+            if threshold > blurred_image[row][col]:
+                row_arr.append(0)
+            else:
+                row_arr.append(255)
+
+        new_image.append(row_arr)
 
     return new_image
 
@@ -313,7 +325,7 @@ def main():
 
 if __name__ == '__main__':
     arguments = sys.argv
-
+    # Checking that there's enough arguments§
     if len(arguments) != 2:
         print("Bad args bro <3 ")
 

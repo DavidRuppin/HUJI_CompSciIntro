@@ -1,28 +1,29 @@
 from image_editor import *
 
 
-# noinspection DuplicatedCode
-def test_separate_channels():
-    assert separate_channels([[[1, 2]]]) == [[[1]], [[2]]]
+def test_separate_channels() -> None:
+    image = [[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3]]]
+    image_lst = [[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
+                 [[2, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]],
+                 [[3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3]]]
 
-    image = [
-        [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
-        [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
-        [[1, 2, 3], [1, 2, 3], [4, 2, 3]]
-    ]
-    image_lst = [
-        [[1, 1, 1], [1, 1, 1], [1, 1, 4]],
-        [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
-        [[3, 3, 3], [3, 3, 3], [3, 3, 3]]
-    ]
+    assert separate_channels(image) == image_lst
+
+    image = [[[1, 2, 3], [1, 2, 3], [1, 2, 3], [2, 3, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3], [3, 3, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3], [2, 3, 3]],
+             [[1, 2, 3], [1, 2, 3], [1, 2, 3], [2, 3, 4]]]
+    image_lst = [[[1, 1, 1, 2], [1, 1, 1, 3], [1, 1, 1, 2], [1, 1, 1, 2]],
+                 [[2, 2, 2, 3], [2, 2, 2, 3], [2, 2, 2, 3], [2, 2, 2, 3]],
+                 [[3, 3, 3, 3], [3, 3, 3, 3], [3, 3, 3, 3], [3, 3, 3, 4]]]
 
     assert separate_channels(image) == image_lst
 
 
-# noinspection DuplicatedCode
-def test_combine_channels():
-    assert combine_channels([[[1]], [[2]]]) == [[[1, 2]]]
-
+def test_combine() -> None:
     image = [[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
              [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
              [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
@@ -52,58 +53,67 @@ def test_combine_channels():
     assert image == combine_channels(separate_channels(image))
 
 
+def test_RGB2grayscale() -> None:
+    image_lst = [[[100, 180, 240]]]
+    image = [[163]]
+    assert RGB2grayscale(image_lst) == image
 
-def test_rgb_to_grayscale():
-    assert RGB2grayscale([[[100, 180, 240]]]) == [[163]]
+    image_lst = [[[200, 0, 14], [15, 6, 50]]]
+    image = [[61, 14]]
+    assert RGB2grayscale(image_lst) == image
 
+    image_lst = [[[200, 0, 14], [15, 6, 50]], [[200, 0, 14], [15, 6, 50]]]
+    image = [[61, 14], [61, 14]]
+    assert RGB2grayscale(image_lst) == image
 
-def test_blur_kernel():
-    assert blur_kernel(3) == [[1 / 9, 1 / 9, 1 / 9], [1 / 9, 1 / 9, 1 / 9], [1 / 9, 1 / 9, 1 / 9]]
-
-
-def test_apply_blur_kernel():
-    assert apply_kernel([[0, 128, 255]], blur_kernel(3)) == [[14, 128, 241]]
-    original = [[10, 20, 30, 40, 50],
-                [8, 16, 24, 32, 40],
-                [6, 12, 18, 24, 30],
-                [4, 8, 12, 16, 20]]
-
-    blurred = [[12, 20, 26, 34, 44],
-               [11, 17, 22, 27, 34],
-               [10, 16, 20, 24, 29],
-               [7, 11, 16, 18, 21]]
-
-    assert apply_kernel(original, blur_kernel(5)) == blurred
+    image_lst = [[[200, 0, 14], [100, 180, 240], [15, 6, 50]],
+                 [[100, 180, 240], [200, 0, 14], [15, 6, 50]]]
+    image = [[61, 163, 14], [163, 61, 14]]
+    assert RGB2grayscale(image_lst) == image
 
 
-def test_bilinear_interpolation():
+def test_blur_kernel() -> None:
+    assert blur_kernel(3) == [[1/9, 1/9, 1/9],
+                              [1/9, 1/9, 1/9], [1/9, 1/9, 1/9]]
+    assert blur_kernel(4) == [[1/16, 1/16, 1/16, 1/16],
+                              [1/16, 1/16, 1/16, 1/16], [1/16, 1/16, 1/16, 1/16], [1/16, 1/16, 1/16, 1/16]]
+    assert blur_kernel(1) == [[1]]
+
+
+def test_apply_kernel() -> None:
+    image = [[0, 128, 255]]
+    kernel = blur_kernel(3)
+    blur = [[14, 128, 241]]
+    assert apply_kernel(image, kernel) == blur
+
+    image = [[10, 20, 30, 40, 50],
+             [8, 16, 24, 32, 40],
+             [6, 12, 18, 24, 30],
+             [4, 8, 12, 16, 20]]
+    kernel = blur_kernel(5)
+    blur = [[12, 20, 26, 34, 44],
+            [11, 17, 22, 27, 34],
+            [10, 16, 20, 24, 29],
+            [7, 11, 16, 18, 21]]
+    assert apply_kernel(image, kernel) == blur
+
+
+def test_bilinear_interpolation() -> None:
+    assert bilinear_interpolation([[0, 64], [128, 255]], 0, 0) == 0
     assert bilinear_interpolation([[0, 64], [128, 255]], 0, 0) == 0
     assert bilinear_interpolation([[0, 64], [128, 255]], 1, 1) == 255
     assert bilinear_interpolation([[0, 64], [128, 255]], 0.5, 0.5) == 112
-    assert bilinear_interpolation([[0, 64],
-                                   [128, 255]], 0.5, 1) == 160
-    assert bilinear_interpolation([[15, 30, 45, 60, 75], [90, 105, 120, 135, 150], [165, 180, 195, 210, 225]], 4 / 5,
-                                  8 / 3) == 115
+    assert bilinear_interpolation([[0, 64], [128, 255]], 0.5, 1) == 160
+    assert bilinear_interpolation([[15, 30, 45, 60, 75], [90, 105, 120, 135, 150], [
+                                  165, 180, 195, 210, 225]], 4/5, 8/3) == 115
 
 
-def test_resize():
-    assert resize([255], 2, 2) == [[255, 255], [255, 255]]
+def test_resize() -> None:
     assert resize([[0, 50], [100, 200]], 3, 4) == [
         [0, 17, 33, 50], [50, 75, 100, 125], [100, 133, 167, 200]]
 
 
-def test_rotate_90():
-    identity_matrix = [[1, 0, 0],
-                       [0, 1, 0],
-                       [0, 0, 1]]
-    assert rotate_90(identity_matrix, "R") == [[0, 0, 1],
-                                               [0, 1, 0],
-                                               [1, 0, 0]]
-
-    assert rotate_90([255], "R") == rotate_90([255], "L") == [255]
-
-    # Tom's Tests
-
+def test_rotate_90() -> None:
     image: Image = [[1, 2, 3], [4, 5, 6]]
     dir = 'R'
     result = [[4, 1],
@@ -139,22 +149,10 @@ def test_rotate_90():
         rotate_90(image, 'L'), 'L')
 
 
-def test_get_edges():
+def test_get_edges() -> None:
     assert get_edges([[200, 50, 200]], 3, 3, 10) == [[255, 0, 255]]
 
-    edge_result = [[0, 0, 255, 255, 0],
-     [255, 255, 255, 255, 255],
-     [255, 255, 0, 255, 255],
-     [255, 255, 0, 255, 255],
-     [255, 255, 0, 255, 255]]
 
-    assert get_edges(
-        [[67, 94, 122, 96, 70],
-         [104, 109, 114, 102, 89],
-         [140, 123, 106, 107, 108],
-         [177, 137, 97, 112, 128],
-         [214, 152, 89, 118, 147]], 1, 3, 5) == edge_result
-
-
-def test_quantize():
-    assert quantize([[0, 50, 100], [150, 200, 250]], 8) == [[0, 36, 109], [146, 219, 255]]
+def test_quantize() -> None:
+    assert quantize([[0, 50, 100], [150, 200, 250]], 8) == [
+        [0, 36, 109], [146, 219, 255]]
