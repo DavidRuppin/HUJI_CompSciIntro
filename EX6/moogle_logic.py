@@ -8,6 +8,8 @@ import urllib.parse
 from collections import defaultdict
 
 from pprint import pprint
+from typing import List
+
 import bs4
 import requests
 
@@ -86,6 +88,9 @@ def filter_dictionary_items(dictionary: dict, items_to_keep: list) -> dict:
 def object_to_pickle(obj, pickle_save_path):
     """Saves an object to a pickle file at @pickle_save_path"""
     with open(pickle_save_path, 'wb') as fp:
+        # I'm using default dicts but the tests want regular ones :(
+        if type(obj) is defaultdict:
+            obj = dict(obj)
         pickle.dump(obj, fp)
 
 
@@ -98,6 +103,46 @@ def object_from_pickle(pickle_path):
 def get_total_num_links_from_page(page_href_dict: dict) -> int:
     """Returns the number of links from a {link:link_count} dictionary. Assuming all the values are integers"""
     return sum(page_href_dict.values())
+
+
+def dict_to_sorted_list(source_dict: dict) -> list:
+    """Accepts a dictionary of key:value and returns a list of [(key, value)] sorted by value"""
+
+    sorted_results = []
+
+    for entry in sorted(source_dict, key=source_dict.get, reverse=True):
+        sorted_results.append((entry, source_dict[entry]))
+
+    return sorted_results
+
+
+def count_search_queries_in_file(filename: str = 'results.txt', output_end: str = '********') -> int:
+    """Count the amount of queries in @filename"""
+    counter = 0
+
+    with open(filename, 'r') as fp:
+        for line in fp.readlines():
+            if output_end == line.rstrip():
+                counter += 1
+
+    return counter
+
+
+def search_results_to_file(results: list, filename: str = 'results.txt',
+                           output_start: str = '<OUTPUT OF SEARCH QUERY {}>',
+                           output_end: str = '**********'):
+    with open(filename, 'a') as fp:
+        query_count = count_search_queries_in_file(filename, output_end) + 1
+
+        print(output_start.format(query_count), file=fp)
+        for search_result in results:
+            print("{} {}".format(*search_result), file=fp)
+        print(output_end, file=fp)
+
+
+def print_search_results(results):
+    for search_result in results:
+        print("{} {}".format(*search_result))
 
 
 # END OF HELPER FUNCTIONS #
@@ -142,3 +187,37 @@ def words_dict(base_url: str, index_file: str, out_file: str):
             word_dict[word][page] = word_dict[word].get(page, 0) + 1
 
     object_to_pickle(word_dict, out_file)
+
+
+def search(query: List[str], ranking_dict_file: str, words_dict_file: str, max_results: int):
+    ranking_dict = object_from_pickle(ranking_dict_file)
+    word_dict = object_from_pickle(words_dict_file)
+
+    results = {}
+
+    for page, rank in dict_to_sorted_list(ranking_dict):
+        for word in query:
+            if word not in word_dict or page not in word_dict[word] or ranking_dict.get(page, None) is None:
+                # If the word_dict or page don't contain the word, don't include it in the results
+                break
+            # If the current page already has an entry choose the minimal one between that and the new word's count
+            # If it doesn't, put the new word count as the new entry
+            results[page] = min(results.get(page, word_dict[word][page]), word_dict[word][page]) * ranking_dict[page]
+
+        if len(results) == max_results:
+            # We got all the results   we came for, end the search
+            break
+
+    # TODO - Put the results in a file called 'results.txt.'
+    search_results_to_file(dict_to_sorted_list(results))
+    # print_search_results(dict_to_sorted_list(results))
+
+
+if __name__ == '__main__':
+    files = './pickles/page_rank.pickle', './pickles/words_dict.pickle'
+    queries = ['scar', 'Crookshanks', 'Horcrux', 'Pensieve McGonagall', 'broom wand cape']
+    max_results = 4
+
+    for current_query in queries:
+        search(list(current_query.split(' ')), *files, max_results)
+

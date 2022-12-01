@@ -52,7 +52,7 @@ def add_words_dict_subparser(subparser):
 
 def add_search_subparser(subparser):
     words_dict = subparser.add_parser('search')
-    words_dict.add_argument('query', type=str)
+    words_dict.add_argument('query', type=str, nargs='+')
     words_dict.add_argument('ranking_dict_file', type=str)
     words_dict.add_argument('words_dict_file', type=str)
     words_dict.add_argument('max_results', type=int)
