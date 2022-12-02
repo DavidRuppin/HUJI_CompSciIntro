@@ -189,9 +189,26 @@ def words_dict(base_url: str, index_file: str, out_file: str):
     object_to_pickle(word_dict, out_file)
 
 
+def list_from_query(query: str):
+    """Testing if this will work. If it does I quit"""
+
+    if type(query) is list and len(query) == 1:
+        query = query[0]
+
+    if type(query) is not list:
+        new_query = []
+        for word in query.split(' '):
+            new_query.append(word)
+        query = new_query
+
+    return query
+
+
 def search(query: List[str], ranking_dict_file: str, words_dict_file: str, max_results: int):
     ranking_dict = object_from_pickle(ranking_dict_file)
     word_dict = object_from_pickle(words_dict_file)
+
+    query = list_from_query(query)
 
     results = {}
 
@@ -207,17 +224,14 @@ def search(query: List[str], ranking_dict_file: str, words_dict_file: str, max_r
         if len(results) == max_results:
             # We got all the results   we came for, end the search
             break
-
-    # TODO - Put the results in a file called 'results.txt.'
-    search_results_to_file(dict_to_sorted_list(results))
-    # print_search_results(dict_to_sorted_list(results))
+    # raise ValueError(f"ranking_dict: {word_dict}\nword_dict: {word_dict}\nquery: {query}\nresults: {results}ֿ")
+    print_search_results(dict_to_sorted_list(results))
 
 
-if __name__ == '__main__':
-    files = './pickles/page_rank.pickle', './pickles/words_dict.pickle'
-    queries = ['scar', 'Crookshanks', 'Horcrux', 'Pensieve McGonagall', 'broom wand cape']
-    max_results = 4
-
-    for current_query in queries:
-        search(list(current_query.split(' ')), *files, max_results)
-
+# if __name__ == '__main__':
+#     files = './pickles/page_rank.pickle', './pickles/words_dict.pickle'
+#     queries = ['scar', 'Crookshanks', 'Horcrux', 'Pensieve McGonagall', 'broom wand cape']
+#     max_results = 4
+#
+#     for current_query in queries:
+#         search(list(current_query.split(' ')), *files, max_results)
