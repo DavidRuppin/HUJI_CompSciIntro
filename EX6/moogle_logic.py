@@ -190,7 +190,8 @@ def words_dict(base_url: str, index_file: str, out_file: str):
 
 
 def list_from_query(query: str):
-    """Testing if this will work. If it does I quit"""
+    """This is only necessary because the tests aren't actually run as cmdlets, just making sure the input I get
+    Is valid since I'm using argparse"""
 
     if type(query) is list and len(query) == 1:
         query = query[0]
@@ -219,19 +220,19 @@ def search(query: List[str], ranking_dict_file: str, words_dict_file: str, max_r
                 break
             # If the current page already has an entry choose the minimal one between that and the new word's count
             # If it doesn't, put the new word count as the new entry
-            results[page] = min(results.get(page, word_dict[word][page]), word_dict[word][page]) * ranking_dict[page]
+            results[page] = min(results.get(page, word_dict[word][page] * ranking_dict[page])
+                                , word_dict[word][page] * ranking_dict[page])
 
         if len(results) == max_results:
             # We got all the results   we came for, end the search
             break
-    # raise ValueError(f"ranking_dict: {word_dict}\nword_dict: {word_dict}\nquery: {query}\nresults: {results}ֿ")
     print_search_results(dict_to_sorted_list(results))
 
 
-# if __name__ == '__main__':
-#     files = './pickles/page_rank.pickle', './pickles/words_dict.pickle'
-#     queries = ['scar', 'Crookshanks', 'Horcrux', 'Pensieve McGonagall', 'broom wand cape']
-#     max_results = 4
-#
-#     for current_query in queries:
-#         search(list(current_query.split(' ')), *files, max_results)
+if __name__ == '__main__':
+    files = './pickles/page_rank.pickle', './pickles/words_dict.pickle'
+    queries = ['scar', 'Crookshanks', 'Horcrux', 'Pensieve McGonagall', 'broom wand cape']
+    max_results = 4
+
+    for current_query in queries:
+        search(list_from_query(current_query), *files, max_results)
