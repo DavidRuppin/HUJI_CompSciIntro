@@ -52,6 +52,31 @@ def test_number_of_ones():
     assert number_of_ones(21) == 13
 
 
+def test_number_of_ones_keren():
+    def number_of_ones_keren(n):
+        """The function receives an int 0<num n. The function uses helper func
+        number_of_ones_help to return num of times 1 appears in nums from 1-n."""
+        low, high, count = 1, n, 0
+        # base case
+        if n == 0:
+            return 0
+        if n < 10:
+            return 1
+        if high >= 10:
+            high = high // 10
+            low = log_mult(low, 10)
+        # recursive step
+        if high != 1:
+            count = low + number_of_ones(n - log_mult(low, high)) + \
+                    log_mult(high, number_of_ones(low - 1))
+        else:
+            count = n - low + 1 + number_of_ones(n - low) + \
+                    number_of_ones(low - 1)
+        return count
+
+    for i in range(101, 1000):
+        assert number_of_ones(i) == number_of_ones_keren(i)
+
 def test_compare_2d_lists():
     assert compare_2d_lists([[1, 2], [4, 5, 6]], [[1, 2], [4, 5, 8]]) is False
     assert compare_2d_lists([[1, 2, 3, 4], [5, 6, 7, 8, 9, 10], []], [[1, 2, 3, 4], [5, 6, 7, 8, 9, 10], []]) is True

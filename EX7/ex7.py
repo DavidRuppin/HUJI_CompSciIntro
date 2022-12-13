@@ -87,42 +87,6 @@ def is_power_helper_bruteforce(powered: int, x: int, original: int) -> bool:
     return is_power_helper_bruteforce(log_mult(powered, original), x, original)
 
 
-# def is_power(b: int, x: int) -> bool:
-#     # 0 ^ 1 == 0
-#     if b == 0 and x == 0 or x == 1:
-#         return True
-#
-#     # Making sure both numbers aren't negative
-#     if b <= 0 or x <= 0:
-#         return False
-#
-#     # If x is 1 then b ^ 0 == x
-#     if x == 1:
-#         return True
-#
-#     # An even number times itself will never be odd and vice versa
-#     if is_odd(b) != is_odd(x):
-#         return False
-#
-#     return is_power_helper(b, x, b)
-#
-#
-# def is_power_helper(b: int, x: int, powered: N) -> bool:
-#     # Every number power zero is 1, if x == b then it's also a product of b power 1
-#     if x == powered:
-#         return True
-#
-#     # if b ^ n > x // 2 then b is too big
-#     if powered > divide_by_2(x):
-#         return False
-#
-#     next_powered: N = log_mult(powered, b)
-#     if is_power_helper(b, x, next_powered):
-#         return True
-#
-#     return False
-
-
 def reverse(s: str) -> str:
     return reverse_helper(s)
 
@@ -147,27 +111,25 @@ def play_hanoi(hanoi: Any, number_of_discs: int, source: Tower, target: Tower, a
 
 
 def number_of_ones(n: int) -> int:
+    # Shouldn't accept non-positive numbers but whatever
     if n == 0:
         return 0
-
-    if n >= 19:
-        initial_count = 0
-        if n % 10 != 9:
-            initial_count = one_count_in_num(n - (n % 10))
-            initial_count *= (1 + (n % 10))
-            if n % 10 >= 1:
-                initial_count += 1
-            n -= n % 10 + 1
-
-        count = one_count_in_num(n - (n % 10))
-        count *= (1 + (n % 10))
-        count += 1 + initial_count
-
-        return count + number_of_ones(n - 10)
-    elif n < 10:
+    # If n < 10 and n != 0 then the only number that has 1's is 1
+    if n < 10:
         return 1
-    else:
-        return one_count_in_num(n) + number_of_ones(n - 1)
+
+    # Enforcing n % 10 == 9 to be able to descend 10 numbers at a time
+    if n % 10 != 9:
+        return number_of_ones(n - 1) + one_count_in_num(n)
+
+    # Getting the number of ones in the number and multiplying by 10 for each of the 10 next numbers in line,
+    # then adding 1 because one of the ten has 1 as its first digit
+    count = one_count_in_num(n) * 10
+    count += 1
+
+    # Descending 10 numbers
+    return count + number_of_ones(n - 10)
+
 
 def one_count_in_num(n: int) -> int:
     if n == 0:

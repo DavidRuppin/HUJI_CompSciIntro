@@ -164,7 +164,11 @@ def page_rank(iterations: int, dict_file: str, out_file: str):
     reference_dict = object_from_pickle(dict_file)
 
     # Initializing the rank_dict to default to 1
-    rank_dict = defaultdict(lambda: 1)
+    # ORIGINAL:
+    # rank_dict = defaultdict(lambda: 1)
+    # FIXED, accounting for the defaultdict to dict transition:
+    rank_dict = {page: 1 for page in reference_dict}
+
     for iteration in range(iterations):
         iter_dict = defaultdict(int)
         for page in reference_dict:

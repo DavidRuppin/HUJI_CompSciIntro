@@ -68,7 +68,7 @@ def test_is_power():
     assert is_power(2, 3) == False
     assert is_power(5, 6) == False
     assert is_power(10, 99) == False
-    assert is_power(2,2**950) == True
+    assert is_power(2, 2 ** 950) == True
 
 
 def test_reverse():
