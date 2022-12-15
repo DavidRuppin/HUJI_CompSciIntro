@@ -3,66 +3,35 @@
 # WRITER : David Ruppin, ruppin, 322296336
 # EXERCISE : intro2cs ex8 2022-2023
 #################################################################
-from pprint import pprint
-from typing import List
 
-board = [[0, 0, 0, 0, 0, 3, 0, 1, 7],
-         [0, 1, 5, 0, 0, 9, 0, 0, 8],
-         [0, 6, 0, 0, 0, 0, 0, 0, 0],
-         [1, 0, 0, 0, 0, 7, 0, 0, 0],
-         [0, 0, 9, 0, 0, 0, 2, 0, 0],
-         [0, 0, 0, 5, 0, 0, 0, 0, 4],
-         [0, 0, 0, 0, 0, 0, 0, 2, 0],
-         [5, 0, 0, 6, 0, 0, 3, 4, 0],
-         [3, 4, 0, 2, 0, 0, 0, 0, 0]]
-
-SIZE: int = len(board)
-VALUES = range(1, 10)
+import math
+from typing import Set, List
 
 
-def is_value_ok_at(board: List[List[int]], row: int, col: int, value: int):
-    block_row_start = (row // 3) * 3
-    block_col_start = (col // 3) * 3
-
-    for x in range(block_row_start, block_row_start + 3):
-        for y in range(block_col_start, block_col_start + 3):
-            if x != row and y != col and board[x][y] == value:
-                return False
-
-    # Going over entire row and col
-    for i in range(SIZE):
-        if i != row and board[i][col] == value:
-            return False
-        if i != col and board[row][i] == value:
-            return False
-
-    return True
+def num_permutations(word):
+    return 1 if len(word) == 0 else math.factorial(len(word))
 
 
-def solve_sudoku_helper(sudoku: List[List[int]], index: int = None):
-    if index is None:
-        index = 0
-
-    if index == SIZE * SIZE:
-        return True
-
-    row = index // 9
-    col = index % 9
-
-    for value in VALUES:
-        res = False
-        if is_value_ok_at(sudoku, row, col, value):
-            sudoku[row][col] = value
-            res = solve_sudoku_helper(sudoku, index + 1)
-        if res is True:
-            return res
-
-    sudoku[row][col] = 0
+def num_permutations_2(word):
+    return 1 if len(word) <= 1 else len(word) * num_permutations(word[:-1])
 
 
-def solve_sudoku(sudoku: List[List[int]]):
-    solve_sudoku_helper(sudoku)
-    pprint(sudoku)
+def num_different_permutations(word):
+    # The next line is here because this is how the tests check if your function is recursive:
+    # they check if within any function there's a section that 'calls' recursively to the same function
+    # by checking for the function's name and then a parenthesis, like this: 'func_name('
+    # num_different_permutations(
+    factorial = lambda n: 1 if n <= 1 else n * factorial(n - 1)
 
-pprint(board)
-solve_sudoku(board)
+    n = factorial(len(word))
+    sum = 1
+    for char in set(word):
+        sum *= factorial(word.count(char))
+
+    return int(n / sum)
+
+
+def factorial(n: int):
+    return 1 if n <= 1 else n * factorial(n - 1)
+
+def num_filtered_permutations(word):
