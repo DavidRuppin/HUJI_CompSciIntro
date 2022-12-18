@@ -73,6 +73,10 @@ def init_board(rows: int, cols: int) -> Picture:
     return [[-1 for col in range(cols)] for row in range(rows)]
 
 
+def check_board_complete(board: Picture) -> bool:
+    return not bool(sum([row.count(-1) for row in board]))
+
+
 def solve_puzzle(constraints_set: Set[Constraint], n: int, m: int) -> Optional[Picture]:
     """
 
@@ -85,7 +89,6 @@ def solve_puzzle(constraints_set: Set[Constraint], n: int, m: int) -> Optional[P
 
 
 def solve_puzzle_helper(board: Picture, constraint_set: Set[Constraint], index: int = 0) -> Optional[Picture]:
-
     # Getting the current row and column from the index
     row, col = index // len(board[0]), index % len(board[0])
 
@@ -94,7 +97,7 @@ def solve_puzzle_helper(board: Picture, constraint_set: Set[Constraint], index: 
     constraint_result = check_constraints(board, constraints)
 
     # If the board is solved, needs debugging
-    if constraint_result == 1:
+    if constraint_result == 1 and check_board_complete(board):
         return board
     # Or if there's an error
     elif constraint_result == 0:
@@ -109,11 +112,84 @@ def solve_puzzle_helper(board: Picture, constraint_set: Set[Constraint], index: 
             return res
 
     board[row][col] = -1
+    return None
 
 
 def how_many_solutions(constraints_set: Set[Constraint], n: int, m: int) -> int:
-    ...
+    """
+    Like solve_puzzle except instead of returning a singular solution this function counts and returns the amount of
+    possible solutions to a given puzzle (0 being no solutions found
+    @param constraints_set: The constraints we must adhere to
+    @param n: The number of rows
+    @param m: The number of columns
+    @return: Solution count
+    """
+
+    return solution_count_helper(init_board(n, m), constraints_set)
+
+
+def solution_count_helper(board: Picture, constraint_set: Set[Constraint], index: int = 0) -> int:
+    # Getting the current row and column from the index
+    row, col = index // len(board[0]), index % len(board[0])
+
+    # Getting only the relevant constraints for the current row and col
+    constraints = get_relevant_constraints(constraint_set, row, col)
+    constraint_result = check_constraints(board, constraints)
+
+    # If the board is solved, needs debugging
+    if constraint_result == 1 and check_board_complete(board):
+        return 1
+    # Or if there's an error
+    elif constraint_result == 0:
+        return 0
+    # If the board is complete
+
+    res = 0
+    for value in [0, 1]:
+        board[row][col] = value
+        res += solution_count_helper(board, constraint_set, index + 1)
+
+    board[row][col] = -1
+
+    return res
+
+
+def get_seen_count(board: Picture, row: int, col: int) -> int:
+    return max_seen_cells(board, row, col)
+
+
+def is_constrained(board: Picture, row: int, col: int, constraints: Set[Constraint]) -> bool:
+    """
+    If one of the constraints is relevant to board[row][col] return True, else False
+    @param row, col: The coordinate to check
+    @param constraints: A set of constraints
+    @return:
+    """
+
+    if board[row][col] == 0:
+        return False
+
+    for constraint in constraints:
+        if constraint[0] != row and constraint[1] != col:
+            continue
+
+        if constraint[0] == row and constraint[2] >= abs(col - constraint[1]):
+            return True
+        elif constraint[1] == col and constraint[2] >= abs(row - constraint[0]):
+            return True
+
+    return False
 
 
 def generate_puzzle(picture: Picture) -> Set[Constraint]:
-    ...
+    """
+    Iterating over the give picture and adds the minial amount of constraints to create a puzzle
+    """
+    constraints: Set[Constraint] = set()
+    for row in range(len(picture)):
+        for col in range(len(picture[0])):
+            if is_constrained(picture, row, col, constraints):
+                continue
+            constraints.add((row, col, get_seen_count(picture, row, col)))
+
+    return constraints

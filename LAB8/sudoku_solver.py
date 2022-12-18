@@ -63,6 +63,3 @@ def solve_sudoku_helper(sudoku: List[List[int]], index: int = None):
 def solve_sudoku(sudoku: List[List[int]]):
     solve_sudoku_helper(sudoku)
     pprint(sudoku)
-
-pprint(board)
-solve_sudoku(board)

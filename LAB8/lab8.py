@@ -35,3 +35,4 @@ def factorial(n: int):
     return 1 if n <= 1 else n * factorial(n - 1)
 
 def num_filtered_permutations(word):
+    pass
