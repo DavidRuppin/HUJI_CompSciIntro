@@ -14,3 +14,7 @@ def load_json(filename):
 class Location(NamedTuple):
     row: int
     col: int
+
+    def __add__(self, other):
+        return Location(self.row + other.row, self.col + other.col)
+
