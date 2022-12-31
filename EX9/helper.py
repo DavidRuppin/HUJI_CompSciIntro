@@ -18,3 +18,9 @@ class Location(NamedTuple):
     def __add__(self, other):
         return Location(self.row + other.row, self.col + other.col)
 
+    def __eq__(self, other):
+        try:
+            return self.row == other[0] and self.col == other[1]
+        except:
+            return False
+

@@ -138,7 +138,7 @@ class Board:
         car = self.pop_car(name)
 
         # If the car exists on the board and the move is legal
-        if car is not None and car.move(move_key):
+        if car is not None and move_key in car.possible_moves():
             _, length, location, orientation = car.get_init_params()
 
             # Creating a new car with the starting location altered according to the move

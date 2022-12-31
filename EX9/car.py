@@ -60,18 +60,21 @@ class Car:
         if move_key == 'u':
             return [(row - 1, col)]
         elif move_key == 'd':
-            return [(row + 1, col)]
+            return [(row + self._length, col)]
         elif move_key == 'l':
             return [(row, (col - 1))]
         elif move_key == 'r':
-            return [(row, (col + 1))]
+            return [(row, col + self._length)]
 
     def move(self, move_key) -> bool:
         """ 
         :param move_key: A string representing the key of the required move.
         :return: True upon success, False otherwise
         """
-        return True if move_key in self.possible_moves() else False
+        if move_key in self.possible_moves():
+            self._location += Car.MOVEMENT_GEOMETRIC_MEANING[move_key]
+            return True
+        return False
 
     def get_name(self) -> str:
         """
