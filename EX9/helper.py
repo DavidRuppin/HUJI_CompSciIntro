@@ -12,6 +12,7 @@ def load_json(filename):
     return car_config
 
 
+# HAD TO MOVE THESE TO GAME BECAUSE THE TESTS DON'T ALLOW FOR EXTRA FILES
 class Location(NamedTuple):
     row: int
     col: int

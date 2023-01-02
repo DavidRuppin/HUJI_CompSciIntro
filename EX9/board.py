@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Optional, Tuple, List, Set, Union
 
 from car import Car
-from helper import Location
+from car import Location
 
 # BOARD CONSTANTS #
 BOARD_WIDTH, BOARD_HEIGHT = 7, 7
@@ -111,7 +111,8 @@ class Board:
         return None
 
     def get_cars(self) -> List[Car]:
-        return list(self._cars.values())
+        # Filtering None values if any exist
+        return list(filter(lambda car: car is not None, self._cars.values()))
 
     def get_car_names(self) -> List[str]:
         return list(self._cars)
@@ -122,7 +123,8 @@ class Board:
         :param car: car object of car to add
         :return: True upon success. False if failed
         """
-        if self.is_car_addable(car):
+
+        if type(car) is Car and self.is_car_addable(car):
             self._cars[car.get_name()] = car
             return True
 
@@ -134,7 +136,9 @@ class Board:
         @param name: The name of the car to be removed
         @return: the Car object on success, None if it doesn't exist
         """
-        return self._cars.pop(name)
+        if self._cars[name] is not None:
+            return self._cars.pop(name)
+        return None
 
     def move_car(self, name, move_key):
         """
@@ -146,22 +150,23 @@ class Board:
         car = self.pop_car(name)
 
         # If the car exists on the board and the move is legal
-        if car is not None and move_key in car.possible_moves():
-            _, length, location, orientation = car.get_init_params()
+        if car is not None:
+            if  move_key in car.possible_moves():
+                _, length, location, orientation = car.get_init_params()
 
-            # Creating a new car with the starting location altered according to the move
-            new_car = Car(name,
-                          length,
-                          location  + Car.MOVEMENT_GEOMETRIC_MEANING[move_key],
-                          orientation)
+                # Creating a new car with the starting location altered according to the move
+                new_car = Car(name,
+                              length,
+                              location  + Car.MOVEMENT_GEOMETRIC_MEANING[move_key],
+                              orientation)
 
 
-            # If the new car can be added, add it and return True
-            # Otherwise the car cannot move in the requested direction and the original car is added back to the board
-            if (self.add_car(new_car)):
-                return True
+                # If the new car can be added, add it and return True
+                # Otherwise the car cannot move in the requested direction and the original car is added back to the board
+                if (self.add_car(new_car)):
+                    return True
 
-        self.add_car(car)
+            self.add_car(car)
         return False
 
     def is_car_addable(self, car: Car) -> bool:
@@ -209,6 +214,7 @@ if __name__ == '__main__':
     car2 = Car('Bavid', 1, (3, 7), 1)
     b.add_car(car)
     b.add_car(car2)
+    b.move_car('f', 'u')
     print(b)
     f = b.cell_content(EXIT_LOCATION)
     f

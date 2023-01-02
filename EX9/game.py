@@ -2,9 +2,9 @@ import re
 import sys
 from typing import List
 
-from EX9.board import Board
-from EX9.car import Car
-from EX9.helper import load_json, Location, create_command_regex_verifier
+from board import Board
+from car import Car
+from helper import load_json
 
 LEGAL_CAR_NAMES = ['Y','B','O','G','W','R']
 LEGAL_MOVES = ['u', 'd', 'l', 'r']
@@ -23,7 +23,7 @@ class Game:
         # You may assume board follows the API
         # implement your code and erase the "pass"
         self._board: Board = board
-        self._move_validity_regex = create_command_regex_verifier(board.get_car_names(), LEGAL_MOVES)
+        self._move_validity_regex = Game.create_command_regex_verifier(board.get_car_names(), LEGAL_MOVES)
 
     def __single_turn(self):
         """
@@ -111,9 +111,10 @@ class Game:
 
         return False
 
-
-
-
+    @staticmethod
+    def create_command_regex_verifier(car_names: List[str], legal_moves: List[str]):
+        REG_FORMAT = '[{}]\,[{}]'
+        return re.compile(REG_FORMAT.format(''.join(car_names), ''.join(legal_moves)))
 
 
 if __name__== "__main__":

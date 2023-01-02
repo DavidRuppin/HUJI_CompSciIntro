@@ -1,5 +1,18 @@
-from typing import Tuple, Dict, List, Set
-from helper import Location
+from typing import Tuple, Dict, List, Set, NamedTuple
+
+class Location(NamedTuple):
+    row: int
+    col: int
+
+    def __add__(self, other):
+        return Location(self.row + other.row, self.col + other.col)
+
+    def __eq__(self, other):
+        try:
+            return self.row == other[0] and self.col == other[1]
+        except:
+            return False
+
 
 
 class Car:
