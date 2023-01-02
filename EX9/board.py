@@ -74,9 +74,14 @@ class Board:
 
         moves = []
         for car in self.get_cars():
+            name = car.get_name()
             curr_moves = car.possible_moves()
             for move in curr_moves:
-                moves.append((car.get_name(), move, curr_moves[move]))
+                # If we can move the car to the given location, append that move
+                if self.move_car(name, move):
+                    moves.append((name, move, curr_moves[move]))
+                    self.pop_car(name)
+                    self.add_car(car)
 
         return moves
 
@@ -105,8 +110,11 @@ class Board:
 
         return None
 
-    def get_cars(self):
+    def get_cars(self) -> List[Car]:
         return list(self._cars.values())
+
+    def get_car_names(self) -> List[str]:
+        return list(self._cars)
 
     def add_car(self, car) -> bool:
         """
@@ -152,9 +160,8 @@ class Board:
             # Otherwise the car cannot move in the requested direction and the original car is added back to the board
             if (self.add_car(new_car)):
                 return True
-            else:
-                self.add_car(car)
 
+        self.add_car(car)
         return False
 
     def is_car_addable(self, car: Car) -> bool:

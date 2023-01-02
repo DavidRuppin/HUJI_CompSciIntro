@@ -1,11 +1,15 @@
+import re
+import sys
 from typing import List
 
 from EX9.board import Board
 from EX9.car import Car
-from EX9.helper import load_json, Location
+from EX9.helper import load_json, Location, create_command_regex_verifier
 
 LEGAL_CAR_NAMES = ['Y','B','O','G','W','R']
+LEGAL_MOVES = ['u', 'd', 'l', 'r']
 
+GAME_END_MESSAGE = "{} has reached the target location, the game is OVER! Good job m8"
 class Game:
     """
     Add class description here
@@ -19,6 +23,7 @@ class Game:
         # You may assume board follows the API
         # implement your code and erase the "pass"
         self._board: Board = board
+        self._move_validity_regex = create_command_regex_verifier(board.get_car_names(), LEGAL_MOVES)
 
     def __single_turn(self):
         """
@@ -44,15 +49,34 @@ class Game:
         The main driver of the Game. Manages the game until completion.
         :return: None
         """
-        # implement your code and erase the "pass"
+
+
         while self._board.cell_content(self._board.target_location()) is None:
+            print(self._board)
+            inp = input("Enter your move: ")
+
+            # If the user wants to quit, let him
+            if inp.strip() == '!':
+                return
+
+            if re.fullmatch(self._move_validity_regex, inp):
+                name, move = inp.split(',')
+                if self._board.move_car(name, move):
+                    print("Great success!")
+                else:
+                    print("Couldn't perform '{},{}'".format(name, move))
+            else:
+                print('Bad input buddy, the valid commands are {} and the format is NAME,COMMAND'.format(LEGAL_MOVES))
+
+        print(self._board)
+        print(GAME_END_MESSAGE.format(self._board.cell_content(self._board.target_location())))
 
 
 
     @staticmethod
     def get_cars_from_json(filename: str) -> List[Car]:
         """
-
+        Loads all the LEGITIMATE cars from a given file
         @param filename: The JSON to load
         @return: A list of cars (could be empty)
         """
@@ -97,5 +121,13 @@ if __name__== "__main__":
     # All access to files, non API constructors, and such must be in this
     # section, or in functions called from this section.
     # implement your code and erase the "pass"
-    # TODO - Implement the command line input handler and deal with empty / problematic json paths
-    print(Game.get_cars_from_json('car_config.json'))
+    args = sys.argv
+    if args and len(args) == 2:
+        json_path = args[1]
+
+        board = Board()
+        for car in Game.get_cars_from_json(json_path):
+            board.add_car(car)
+
+        game = Game(board)
+        game.play()

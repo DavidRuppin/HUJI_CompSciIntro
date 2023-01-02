@@ -204,18 +204,18 @@ def test_possible_moves_works():
     car2 = Car("Y", 2, (3, 3), VERTICAL)
     assert board.add_car(car1)
     assert board.add_car(car2)
-    assert sorted([MOVE_LEFT, MOVE_RIGHT]) == car_moves("R")
-    assert sorted([MOVE_UP, MOVE_DOWN]) == car_moves("Y")
+    assert car_moves("R") == sorted([MOVE_LEFT, MOVE_RIGHT])
+    assert car_moves("Y") == sorted([MOVE_UP, MOVE_DOWN])
 
     blocking_r_from_left = Car("O", 2, (1, 0), HORIZONTAL)
     assert board.add_car(blocking_r_from_left)
-    assert sorted([MOVE_RIGHT]) == car_moves("R")
+    assert car_moves("R") == sorted([MOVE_RIGHT])
     assert [] == car_moves("O")
 
     blocking_y_from_down = Car("Wut", 1, (5, 3), HORIZONTAL)
     assert board.add_car(blocking_y_from_down)
-    assert sorted([MOVE_UP]) == car_moves("Y")
-    assert sorted([MOVE_LEFT, MOVE_RIGHT]) == car_moves("Wut")
+    assert car_moves("Y") == sorted([MOVE_UP])
+    assert car_moves("Wut") == sorted([MOVE_LEFT, MOVE_RIGHT])
 
 
 def test_move_car():

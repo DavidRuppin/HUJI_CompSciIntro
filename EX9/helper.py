@@ -1,6 +1,7 @@
 import json
+import re
 from collections import namedtuple
-from typing import NamedTuple
+from typing import NamedTuple, List
 
 
 def load_json(filename):
@@ -24,3 +25,7 @@ class Location(NamedTuple):
         except:
             return False
 
+
+def create_command_regex_verifier(car_names: List[str], legal_moves: List[str]):
+    REG_FORMAT = '[{}]\,[{}]'
+    return re.compile(REG_FORMAT.format(''.join(car_names), ''.join(legal_moves)))
