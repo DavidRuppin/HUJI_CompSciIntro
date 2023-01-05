@@ -87,13 +87,16 @@ class Snake(HasGetLocations, DirectionalObject):
             self.rotate_right()
 
 
-    def move(self):
+    def move(self, do_pop: bool = True) -> Union[Location, None]:
         """Moves the snake in its current direction
-        :@return: the Location of the popped part of the snake if the body is not empty, None if it doesn't
+        :@param do_pop: The flag that controls the removal of the last object of the snake
+        :@return: the Location of the popped part of the snake if the body is not empty, None if it doesn't or if do_pop
+                                        is set to False
         """
         self._bod.append(self.get_head_location())
         self._head += self.get_direction()
-        return self.pop()
+        if do_pop:
+            return self.pop()
 
 
     def get_head_location(self) -> Location:

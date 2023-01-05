@@ -16,6 +16,8 @@ def main_loop(gd: GameDisplay, args: argparse.Namespace) -> None:
         game.read_key(key_clicked)
         # UPDATE OBJECTS
         game.update_objects()
+        score = game.get_score()
+        gd.show_score(score)
         # DRAW BOARD
         game.draw_board(gd)
         # WAIT FOR NEXT ROUND:
