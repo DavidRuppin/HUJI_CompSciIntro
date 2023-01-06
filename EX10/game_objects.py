@@ -137,3 +137,18 @@ class Apple(HasGetLocations):
 
     def get_locations(self) -> List[Location]:
         return [self.get_head_location()]
+
+class ScoreTracker:
+    def __init__(self, score=0):
+        self.score = score
+
+    def get_score(self) -> int:
+        return self.score
+
+    def increase_score(self, amount: int):
+        self.score += amount
+
+    @staticmethod
+    def get_score_increment(snake_size: int) -> int:
+        """Calculates the amount the score should grow in a single turn for a given snake size"""
+        return int(snake_size ** 0.5)
