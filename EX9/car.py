@@ -1,18 +1,7 @@
-from typing import Tuple, Dict, List, Set, NamedTuple
+from typing import List
 
-class Location(NamedTuple):
-    row: int
-    col: int
-
-    def __add__(self, other):
-        return Location(self.row + other.row, self.col + other.col)
-
-    def __eq__(self, other):
-        try:
-            return self.row == other[0] and self.col == other[1]
-        except:
-            return False
-
+VERTICAL = 0
+HORIZONTAL = 1
 
 
 class Car:
@@ -20,20 +9,7 @@ class Car:
     Add class description here
     """
 
-    # CAR CONSTANTS #
-    VERTICAL = 0
-    HORIZONTAL = 1
-
-    MOVEMENT_MESSAGES_VERTICAL = {'u': 'The car will be teleported up one cell',
-                                  'd': 'The car will be smashed so bad it\'ll descend one cell'}
-
-    MOVEMENT_MESSAGES_HORIZONTAL = {'l': 'The car will side-jump to the left',
-                                    'r': 'The car will now support Ben Gvir'}
-
-    MOVEMENT_GEOMETRIC_MEANING = {'u': Location(-1, 0), 'd': Location(1, 0),
-                                  'l': Location(0, -1), 'r': Location(0, 1)}
-
-    def __init__(self, name: str, length: int, location: Tuple[int, int], orientation: int):
+    def __init__(self, name, length, location, orientation):
         """
         A constructor for a Car object
         :param name: A string representing the car's name
@@ -43,49 +19,54 @@ class Car:
         """
         # Note that this function is required in your Car implementation.
         # implement your code and erase the "pass"
-        self._name = name
-        self._length = length
-        self._location: Location = Location(*location)
-        self._orientation = orientation
+        self.name = name
+        self.length = length
+        self.location = location
+        self.orientation = orientation
 
-    def car_coordinates(self) -> List[Location]:
+    def car_coordinates(self) -> List:
         """
         :return: A list of coordinates the car is in
         """
-        return list(self.get_locations())
+        # implement your code and erase the "pass"
+        return [(self.location[0] + i, self.location[1]) if self.orientation == VERTICAL else (
+            self.location[0], self.location[1] + i) for i in range(self.length)]
 
-    def possible_moves(self) -> Dict[str, str]:
+    def possible_moves(self) -> dict:
         """
         :return: A dictionary of strings describing possible movements permitted by this car.
         """
-        return Car.MOVEMENT_MESSAGES_VERTICAL if self._orientation == Car.VERTICAL else Car.MOVEMENT_MESSAGES_HORIZONTAL
+        # For this car type, keys are from 'udrl'
+        # The keys for vertical cars are 'u' and 'd'.
+        # The keys for horizontal cars are 'l' and 'r'.
+        # You may choose appropriate strings.
+        # implement your code and erase the "pass"
+        # The dictionary returned should look something like this:
+        # result = {'f': "cause the car to fly and reach the Moon",
+        #          'd': "cause the car to dig and reach the core of Earth",
+        #          'a': "another unknown action"}
+        return {'u': 'up', 'd': 'down'} if self.orientation == VERTICAL else {'l': 'left', 'r': 'right'}
 
-    def movement_requirements(self, move_key) -> List[Tuple]:
+    def movement_requirements(self, move_key) -> List:
         """ 
         :param move_key: A string representing the key of the required move.
-        :return: A list of cell locations which must be empty in order for this move to be legal or an empty list
-                                                                                                if the move is illegal
+        :return: A list of cell locations which must be empty in order for this move to be legal.
         """
-        if move_key not in self.possible_moves():
-            return []
-
-        row, col = self._location
-        if move_key == 'u':
-            return [(row - 1, col)]
-        elif move_key == 'd':
-            return [(row + self._length, col)]
-        elif move_key == 'l':
-            return [(row, (col - 1))]
-        elif move_key == 'r':
-            return [(row, col + self._length)]
+        move_key_dict = {'u': -1, 'd': 1, 'l': -1, 'r': 1}
+        row, col = self.car_coordinates()[-1 if move_key in ['d', 'r'] else 0]
+        move = move_key_dict[move_key]
+        return [(row + move, col) if self.orientation == VERTICAL else (row, col + move)]
 
     def move(self, move_key) -> bool:
         """ 
         :param move_key: A string representing the key of the required move.
         :return: True upon success, False otherwise
         """
+        move_key_dict = {'u': -1, 'd': 1, 'l': -1, 'r': 1}
         if move_key in self.possible_moves():
-            self._location += Car.MOVEMENT_GEOMETRIC_MEANING[move_key]
+            move = move_key_dict[move_key]
+            row, col = self.location
+            self.location = (row + move, col) if self.orientation == VERTICAL else (row, col + move)
             return True
         return False
 
@@ -93,24 +74,4 @@ class Car:
         """
         :return: The name of this car.
         """
-        return self._name
-
-    def get_locations(self) -> Set[Location]:
-        """
-        @return: A set of the car's Location objects with the location of this car as the head and the car's size
-        as the size
-        """
-
-        row, col = self._location
-
-        locations = {Location(row + i, col) if self._orientation == Car.VERTICAL else Location(row, col + i) for
-                     i in range(self._length)}
-
-        return locations
-
-    def get_init_params(self) -> Tuple[str, int, Location, int]:
-        """
-        A function to easily replicate the car and alter its creation parameters
-        @return: All the __init__ parameters
-        """
-        return (self.get_name(), self._length, self._location, self._orientation)
+        return self.name
