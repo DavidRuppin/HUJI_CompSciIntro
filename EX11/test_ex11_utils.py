@@ -626,6 +626,7 @@ class Ex12Tests(unittest.TestCase):
         ]
         for tc in testcases + (random_board_cases if self.random_board_tests else []):
             with self.subTest(tc['name']):
+                print(tc['name'])
                 actual = find_length_n_paths(**tc["input"])
                 self.assertListEqualWithoutOrder(tc['expected'], actual)
                 self.dot()

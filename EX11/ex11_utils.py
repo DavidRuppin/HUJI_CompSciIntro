@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Tuple, Iterable, Optional
+from typing import List, Tuple, Iterable, Optional, Set
 
 Board = List[List[str]]
 Path = List[Tuple[int, int]]
@@ -46,33 +46,31 @@ class BoardObject:
         return False
 
     def is_path_valid(self, path: Path, words: Iterable[str]) -> Optional[str]:
-        word = ''
+        word = self.word_from_locations(path)
         path_length = len(path)
         unique_path = set(path)
         # checks to see if the origin path had duplicate locations
         if len(path) != len(unique_path):
             return None
-        # Iterating over the locations in the given path
-        for loc_index in range(path_length):
-            # Making sure the location is in the board
-            if not self.is_location_in_board(path[loc_index]):
-                return None
-            # And that two
-            elif loc_index < path_length - 1:
-                if not self.are_neighbors(path[loc_index], path[loc_index + 1]):
-                    return None
-            loc_row, loc_col = path[loc_index]
-            word += self.get_location((loc_row, loc_col))
-            if word in words:
-                return word
-        return None
+
+        return word if word in words else None
 
     def get_location(self, location: Location) -> str:
         row, col = location
         return self._board[row][col]
 
+    def word_from_locations(self, locations: Path) -> Optional[str]:
+        return ''.join(self.get_location(location) for location in locations)
 
-def get_n_sized_paths_from_location(board: BoardObject, locations: Path, words: Iterable[str], count,
+def create_partial_words(words: Iterable[str]) -> Set[str]:
+    max_length = max(map(lambda x : len(x),words))
+    result = set()
+    for iter in range(1, max_length):
+        setter = (set(map(lambda x : x[:iter], words)))
+        result = result.union(setter)
+    return result
+
+def get_n_sized_paths_from_location(board: BoardObject, locations: Path, partial_word_set: Set[str], words: Iterable[str], count,
                                     paths: List[Path]) -> List[Path]:
     # Get all the paths from the last location in the @locations list [which is the tail of the current path]
     if count == 1:
@@ -85,7 +83,9 @@ def get_n_sized_paths_from_location(board: BoardObject, locations: Path, words: 
             continue
 
         locations.append(neighbor)
-        get_n_sized_paths_from_location(board, locations, words, count - 1, paths)
+        # If we're near the end check first then send to the final check
+        if board.word_from_locations(locations) in partial_word_set or count == 2:
+            get_n_sized_paths_from_location(board, locations, partial_word_set, words, count - 1, paths)
         locations.pop()
 
     return paths
@@ -106,17 +106,17 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
                 return None
         loc_row , loc_col = path[loc_index]
         word += board.get_location((loc_row, loc_col))
-        if word in words:
-            return word
-    return None
+
+    return word if word in words else None
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     board = BoardObject(board)
+    partial_word_set = create_partial_words(words)
 
     paths: List[Path] = []
     for row in range(board.rows):
         for col in range(board.cols):
-            get_n_sized_paths_from_location(board, [(row, col)], words, n, paths)
+            get_n_sized_paths_from_location(board, [(row, col)], partial_word_set, words, n, paths)
 
     return paths
 
@@ -129,21 +129,63 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     pass
 
 
-if __name__ == '__main__':
-    board = [["I", "E", "E", "Y"],
-             ["E", "B", "I", "W"],
-             ["A", "V", "E", "R"],
-             ["U", "W", "A", "P"]]
+if __name__ == '__main__': #LED", "SITE", "KIT", "WIELD
+    BOARD1 = [["I", "S", "W", "L"],
+              ["I", "I", "T", "R"],
+              ["E", "K", "E", "D"],
+              ["A", "M", "L", "J"]]
+    BOARD2 = [["I", "E", "E", "Y"],
+              ["E", "B", "I", "W"],
+              ["A", "V", "E", "R"],
+              ["U", "W", "A", "P"]]
+    BOARD3 = [["?", "A", "?", "?"],
+              ["?", "B", "?", "A"],
+              ["?", "C", "B", "?"],
+              ["?", "?", "?", "?"]]
 
-    words = ['EAVE', 'BEAU', 'BEAR', 'WEIR', 'WIVE', 'WIVE',
-             'WIRE', 'WEAR', 'WEIR', 'WRAP', 'AVER', 'VIEW',
-             'VIEW', 'VIEW', 'EAVE', 'REAP', 'RAVE', 'RAVE',
-             'RAPE', 'WAVE', 'WAVE', 'WAVE', 'WAVE', 'WARE',
-             'WARP', 'WEAR', 'WEIR', 'AVER', 'PEAR', 'PAVE',
-             'PAVE', 'PARE']
+    from pprint import pp
 
-    paths = []
-    from pprint import pprint as pp
+    board = BOARD1
+    n = 1
+    words = []
+    def a():
+        board = [["I", "E", "E", "Y"],
+                 ["E", "B", "I", "W"],
+                 ["A", "V", "E", "R"],
+                 ["U", "W", "A", "P"]]
 
-    pp(find_length_n_paths(4, board, words))
-    # print(get_n_sized_paths_from_location(board, [(1, 1)], words, 3))
+        words = ['EAVE', 'BEAU', 'BEAR', 'WEIR', 'WIVE', 'WIVE',
+                 'WIRE', 'WEAR', 'WEIR', 'WRAP', 'AVER', 'VIEW',
+                 'VIEW', 'VIEW', 'EAVE', 'REAP', 'RAVE', 'RAVE',
+                 'RAPE', 'WAVE', 'WAVE', 'WAVE', 'WAVE', 'WARE',
+                 'WARP', 'WEAR', 'WEIR', 'AVER', 'PEAR', 'PAVE',
+                 'PAVE', 'PARE']
+
+        paths = []
+        from pprint import pprint as pp
+
+        pp(find_length_n_paths(4, board, words))
+        # print(get_n_sized_paths_from_location(board, [(1, 1)], words, 3))
+
+    def b():
+        n = 7
+        board = [["X", "Z", "Y", "X"],
+                  ["Y", "AB", "X", "Z"],
+                  ["X", "C", "BA", "?"],
+                  ["?", "?", "?", "?"]]
+        words = ['ZABCBAZ', 'ZBACABZ', 'XYXCXYX']
+
+        print(find_length_n_paths(n, board, words))
+
+    def palindrome():
+        board = BOARD3
+        n = 5
+        words = ['ABCBA']
+        pp(find_length_n_paths(n, board, words))
+
+    def happy():
+        n, board, words = 4, BOARD1, ["LED", "SITE", "KIT", "WIELD"]
+        pp(find_length_n_paths(n, board, words))
+
+
+    happy()
