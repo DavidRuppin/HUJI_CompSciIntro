@@ -187,5 +187,4 @@ if __name__ == '__main__': #LED", "SITE", "KIT", "WIELD
         n, board, words = 4, BOARD1, ["LED", "SITE", "KIT", "WIELD"]
         pp(find_length_n_paths(n, board, words))
 
-
     happy()
