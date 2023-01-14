@@ -49,6 +49,8 @@ def do_two_windows():
 
 
 def do_two_frames():
+    import tkinter as tk
+
     class MainApplication(tk.Frame):
         def __init__(self, parent: tk.Tk, *args, **kwargs):
             tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -57,7 +59,7 @@ def do_two_frames():
 
         def init_main_frame(self):
             self.main_frame = tk.Frame(self.parent)
-            self.main_frame.pack(side="top", fill="both", expand=True)
+            self.main_frame.pack(side="top", fill=tk.BOTH, expand=True)
 
             self.open_second_frame_button = tk.Button(self.main_frame, text="Open Second Frame",
                                                       command=self.open_second_frame)
@@ -69,21 +71,25 @@ def do_two_frames():
 
         def init_second_frame(self):
             self.second_frame = create_board_frame(self.parent)
-            self.second_frame.pack(side="top", fill="both", expand=True)
+            self.second_frame.pack(side="top", fill=tk.BOTH, expand=True)
 
         def back_to_main(self):
             self.second_frame.destroy()
             self.init_main_frame()
 
+    root = init_root()
+    app = MainApplication(root)
+    app.pack(side="top", fill=tk.BOTH, expand=True)
+    root.mainloop()
+
+
+def init_root() -> tk.Tk:
     root = tk.Tk()
     width = root.winfo_screenwidth()
     height = root.winfo_screenheight()
     root.geometry(f'{width // 2}x{height // 2}')
     root.title("Boggle Menu")
 
-    app = MainApplication(root)
-    app.pack(side="top", fill="both", expand=True)
-    root.mainloop()
-
+    return root
 
 do_two_frames()
