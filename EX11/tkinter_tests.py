@@ -49,8 +49,6 @@ def do_two_windows():
 
 
 def do_two_frames():
-    import tkinter as tk
-
     class MainApplication(tk.Frame):
         def __init__(self, parent: tk.Tk, *args, **kwargs):
             tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -78,6 +76,11 @@ def do_two_frames():
             self.init_main_frame()
 
     root = tk.Tk()
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    root.geometry(f'{width // 2}x{height // 2}')
+    root.title("Boggle Menu")
+
     app = MainApplication(root)
     app.pack(side="top", fill="both", expand=True)
     root.mainloop()

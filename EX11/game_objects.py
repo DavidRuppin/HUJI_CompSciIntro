@@ -57,6 +57,7 @@ class Board:
         return abs(loc1.row - loc2.row) <= 1 and abs(loc1.col - loc2.col) <= 1
 
     def is_path_valid(self, path: Path, words: Iterable[str]) -> Optional[str]:
+        """Checks if a path doesn't repeat two Locations and if the word it makes is in the words iterable"""
         word = self.word_from_locations(path)
         unique_path = set(path)
         # checks to see if the origin path had duplicate locations
