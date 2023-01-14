@@ -46,14 +46,18 @@ class BoardObject:
         return False
 
     def is_path_valid(self, path: Path, words: Iterable[str]) -> Optional[str]:
-        word = ""
+        word = ''
         path_length = len(path)
         unique_path = set(path)
-        if len(path) != len(unique_path):  # checks to see if the origin path had duplicates locations
+        # checks to see if the origin path had duplicate locations
+        if len(path) != len(unique_path):
             return None
+        # Iterating over the locations in the given path
         for loc_index in range(path_length):
+            # Making sure the location is in the board
             if not self.is_location_in_board(path[loc_index]):
                 return None
+            # And that two
             elif loc_index < path_length - 1:
                 if not self.are_neighbors(path[loc_index], path[loc_index + 1]):
                     return None
@@ -86,6 +90,25 @@ def get_n_sized_paths_from_location(board: BoardObject, locations: Path, words: 
 
     return paths
 
+
+def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[str]:
+    board = BoardObject(board)
+    word = ""
+    path_length = len(path)
+    unique_path = set(path)
+    if len(path) != len(unique_path): # checks to see if the origin path had duplicates locations
+        return None
+    for loc_index in range(path_length):
+        if not board.is_location_in_board(path[loc_index]):
+            return None
+        elif loc_index< path_length - 1:
+            if not board.are_neighbors(path[loc_index], path[loc_index + 1]):
+                return None
+        loc_row , loc_col = path[loc_index]
+        word += board.get_location((loc_row, loc_col))
+        if word in words:
+            return word
+    return None
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     board = BoardObject(board)
