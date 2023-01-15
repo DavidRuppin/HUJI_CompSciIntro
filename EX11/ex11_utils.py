@@ -18,6 +18,7 @@ class BoardObject:
         return self.rows
     def get_num_cols(self) -> int:
         return self.cols
+    @lru_cache
     def get_location_neighbors(self, location: Location):
         neighbors = []
 
@@ -127,10 +128,12 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
     return word if word in words else None
 
-
-def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
+def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str]) -> List[Path]:
+    return find_length_n_paths_with_options(n, board, words)
+def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str], partial_word_set=None) -> List[Path]:
     board = BoardObject(board)
-    partial_word_set = create_partial_words(words)
+    if partial_word_set is None:
+        partial_word_set = create_partial_words(words)
 
     paths: List[Path] = []
     for row in range(board.rows):
@@ -182,8 +185,11 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     board : BoardObject = BoardObject(board)
     words_chosen = []
     all_paths = []
+
+    partial_word_set = create_partial_words(words)
+
     for n in range(board.rows * board.cols, 0 , - 1):
-        cur_results = find_length_n_paths(n, board.get_board(), words)
+        cur_results = find_length_n_paths_with_options(n, board.get_board(), words, partial_word_set)
         add_results(board, all_paths, cur_results, words_chosen)
     return all_paths
 
@@ -226,7 +232,7 @@ if __name__ == '__main__':  # LED", "SITE", "KIT", "WIELD
         paths = []
         from pprint import pprint as pp
 
-        pp(find_length_n_paths(4, board, words))
+        pp(find_length_n_paths_with_options(4, board, words))
         # print(get_n_sized_paths_from_location(board, [(1, 1)], words, 3))
 
 
@@ -238,19 +244,19 @@ if __name__ == '__main__':  # LED", "SITE", "KIT", "WIELD
                  ["?", "?", "?", "?"]]
         words = ['ZABCBAZ', 'ZBACABZ', 'XYXCXYX']
 
-        print(find_length_n_paths(n, board, words))
+        print(find_length_n_paths_with_options(n, board, words))
 
 
     def palindrome():
         board = BOARD3
         n = 5
         words = ['ABCBA']
-        pp(find_length_n_paths(n, board, words))
+        pp(find_length_n_paths_with_options(n, board, words))
 
 
     def happy():
         n, board, words = 4, BOARD1, ["LED", "SITE", "KIT", "WIELD"]
-        pp(find_length_n_paths(n, board, words))
+        pp(find_length_n_paths_with_options(n, board, words))
 
 
     happy()
