@@ -67,13 +67,23 @@ class BoardObject:
         return ''.join(self.get_location(location) for location in locations)
 
 
+@lru_cache
+def create_partial_words_from_word(word: str) -> Set[str]:
+    return {word[:i] for i in range(1, len(word)+1)}
+
+
 def create_partial_words(words: Iterable[str]) -> Set[str]:
-    max_length = max(map(lambda x: len(x), words))
-    result = set()
-    for iter in range(1, max_length):
-        setter = (set(map(lambda x: x[:iter], words)))
-        result = result.union(setter)
-    return result
+    res = set()
+    for word in words:
+        res.update(create_partial_words_from_word(word))
+    return res
+# def create_partial_words(words: Iterable[str]) -> Set[str]:
+#     max_length = max(map(lambda x: len(x), words))
+#     result = set()
+#     for iter in range(1, max_length + 1):
+#         setter = (set(map(lambda x: x[:iter], words)))
+#         result = result.union(setter)
+#     return result
 
 
 def get_n_sized_paths_from_location(board: BoardObject, locations: Path, partial_word_set: Set[str],
@@ -130,46 +140,53 @@ def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path
     return paths
 
 
-def get_n_scope(board: BoardObject, location: Location, n: int) -> List[Location]:
-    locations_result = []
-    location_row, location_col = location
-    row_start = location_row - n + 1
-    col_start = location_col - n + 1
-    row_end = location_row + n - 1
-    col_end = location_col + n - 1
-    for row in range(row_start, row_end + 1):
-        for col in range(col_start, col_end + 1):
-            if board.is_location_in_board((row, col)):
-                locations_result.append((row, col))
-    return locations_result
+def _find_length_n_words_helper(n: int, board: BoardObject, words: Iterable[str], count: int, path: Path,
+                                partial_words: Set[str],
+                                paths: List[Path]):
 
-
-def _find_length_n_words_helper(n: int, board: BoardObject, words: Iterable[str], index: int, path: Path,
-                                partial_words: Set[str], paths: List[Path]):
-    num_rows = board.get_num_rows()
-    num_cols = board.get_num_cols()
     if len(board.word_from_locations(path)) == n and is_valid_path(board.get_board(), path, words):
         paths.append([*path])
+        return paths
+    elif count == 0:
         return
 
-    row, col = index // num_cols, index % num_cols
 
-    for location in get_n_scope(board, (row, col), n):
+    for location in board.get_location_neighbors(path[-1]):
         path.append(location)
         if board.word_from_locations(path) in partial_words:
-            _find_length_n_words_helper(n, board, words, index + 1, path, partial_words, paths)
+            _find_length_n_words_helper(n, board, words, count - 1, path, partial_words,paths)
         path.pop()
     return paths
 
 
 def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     partial_words = create_partial_words(words)
-    board: BoardObject = BoardObject(board)
-    return _find_length_n_words_helper(n, board, words, 0, [], partial_words, [])
+    board :BoardObject = BoardObject(board)
+    paths : List[Path] = []
+    for row in range(board.rows):
+        for col in range(board.cols):
+            _find_length_n_words_helper(n, board, words, n, [(row,col)], partial_words, paths)
+    return paths
+
+
+def add_results(board : BoardObject ,all_paths: list[Path], cur_results: List[Path], words_chosen : List[str]):
+    for path in cur_results:
+        word = board.word_from_locations(path)
+        if word in words_chosen:
+            continue
+        all_paths.append(path)
+        words_chosen.append(word)
 
 
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
-    pass
+    board : BoardObject = BoardObject(board)
+    words_chosen = []
+    all_paths = []
+    for n in range(board.rows * board.cols, 0 , - 1):
+        cur_results = find_length_n_paths(n, board.get_board(), words)
+        add_results(board, all_paths, cur_results, words_chosen)
+    return all_paths
+
 
 
 if __name__ == '__main__':  # LED", "SITE", "KIT", "WIELD
