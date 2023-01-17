@@ -6,6 +6,9 @@
 from typing import NamedTuple
 from typing import List, Iterable, Optional
 
+from boggle_gui import BoardUI
+
+
 class Location(NamedTuple):
     row: int
     col: int
@@ -72,3 +75,11 @@ class Board:
 
     def word_from_locations(self, locations: Path) -> Optional[str]:
         return ''.join(self.get_location(location) for location in locations)
+
+
+class BoggleGame:
+    def board_button_clicked(self, location: Location):
+        pass
+
+    def submit_button_clicked(self):
+        pass

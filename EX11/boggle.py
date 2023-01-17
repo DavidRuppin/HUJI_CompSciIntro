@@ -1,10 +1,10 @@
 #################################################################
-# FILE : boggle_main.py
+# FILE : boggle.py
 # WRITER : David Ruppin, ruppin, 322296336
 # EXERCISE : intro2cs ex11 2022-2023
 #################################################################
 
-from EX11.boggle_board_randomizer import randomize_board
+from boggle_board_randomizer import randomize_board
 from game_objects import *
 
 

@@ -14,10 +14,13 @@ class BoardObject:
 
     def get_board(self) -> Board:
         return self._board
+
     def get_num_rows(self) -> int:
         return self.rows
+
     def get_num_cols(self) -> int:
         return self.cols
+
     @lru_cache
     def get_location_neighbors(self, location: Location):
         neighbors = []
@@ -70,7 +73,7 @@ class BoardObject:
 
 @lru_cache
 def create_partial_words_from_word(word: str) -> Set[str]:
-    return {word[:i] for i in range(1, len(word)+1)}
+    return {word[:i] for i in range(1, len(word) + 1)}
 
 
 def create_partial_words(words: Iterable[str]) -> Set[str]:
@@ -78,6 +81,8 @@ def create_partial_words(words: Iterable[str]) -> Set[str]:
     for word in words:
         res.update(create_partial_words_from_word(word))
     return res
+
+
 # def create_partial_words(words: Iterable[str]) -> Set[str]:
 #     max_length = max(map(lambda x: len(x), words))
 #     result = set()
@@ -128,8 +133,11 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
     return word if word in words else None
 
-def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str]) -> List[Path]:
+
+def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     return find_length_n_paths_with_options(n, board, words)
+
+
 def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str], partial_word_set=None) -> List[Path]:
     board = BoardObject(board)
     if partial_word_set is None:
@@ -146,33 +154,31 @@ def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str],
 def _find_length_n_words_helper(n: int, board: BoardObject, words: Iterable[str], count: int, path: Path,
                                 partial_words: Set[str],
                                 paths: List[Path]):
-
     if len(board.word_from_locations(path)) == n and is_valid_path(board.get_board(), path, words):
         paths.append([*path])
         return paths
     elif count == 0:
         return
 
-
     for location in board.get_location_neighbors(path[-1]):
         path.append(location)
         if board.word_from_locations(path) in partial_words:
-            _find_length_n_words_helper(n, board, words, count - 1, path, partial_words,paths)
+            _find_length_n_words_helper(n, board, words, count - 1, path, partial_words, paths)
         path.pop()
     return paths
 
 
 def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path]:
     partial_words = create_partial_words(words)
-    board :BoardObject = BoardObject(board)
-    paths : List[Path] = []
+    board: BoardObject = BoardObject(board)
+    paths: List[Path] = []
     for row in range(board.rows):
         for col in range(board.cols):
-            _find_length_n_words_helper(n, board, words, n, [(row,col)], partial_words, paths)
+            _find_length_n_words_helper(n, board, words, n, [(row, col)], partial_words, paths)
     return paths
 
 
-def add_results(board : BoardObject ,all_paths: list[Path], cur_results: List[Path], words_chosen : List[str]):
+def add_results(board: BoardObject, all_paths: list[Path], cur_results: List[Path], words_chosen: List[str]):
     for path in cur_results:
         word = board.word_from_locations(path)
         if word in words_chosen:
@@ -182,17 +188,16 @@ def add_results(board : BoardObject ,all_paths: list[Path], cur_results: List[Pa
 
 
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
-    board : BoardObject = BoardObject(board)
+    board: BoardObject = BoardObject(board)
     words_chosen = []
     all_paths = []
 
     partial_word_set = create_partial_words(words)
 
-    for n in range(board.rows * board.cols, 0 , - 1):
+    for n in range(board.rows * board.cols, 0, - 1):
         cur_results = find_length_n_paths_with_options(n, board.get_board(), words, partial_word_set)
         add_results(board, all_paths, cur_results, words_chosen)
     return all_paths
-
 
 
 if __name__ == '__main__':  # LED", "SITE", "KIT", "WIELD
