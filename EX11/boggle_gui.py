@@ -1,6 +1,10 @@
+"""
+Web Pages Used: https://web.archive.org/web/20190515013614id_/http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/event-handlers.html
+"""
+
 from dataclasses import dataclass
 import tkinter as tk
-from tkinter import Toplevel
+from tkinter import Toplevel, ttk
 from typing import List, Set, Iterable
 
 from game_objects import Board, Location, Path
@@ -9,12 +13,21 @@ from boggle_board_randomizer import randomize_board
 
 @dataclass
 class GameUIConstants:
-    DEFAULT_SCORE = 0
-    DEFAULT_TIMER = 180
+    
+    GAME_WINDOW_GEOMETRY = '400x400'
     BOGGLE_GAME_TITLE = 'Current Word'
+
+    DEFAULT_TIMER = 180
     TIMER_LABEL_TEXT = 'Time left:'
+
+    DEFAULT_SCORE = 0
     SCORE_LABEL_TEXT = 'Score:'
+
+    USED_WORDS_TITLE_TEXT = 'Used Words'
+
     BOARD_BUTTON_SIZE = 5
+    BUTTON_MIDDLE_CLICK_EVENT = '<Button-2>'
+    BUTTON_RIGHT_CLICK_EVENT = '<Button-3>'
 
 
 @dataclass
@@ -22,8 +35,13 @@ class MenuUIConstants:
     MENU_TITLE_TEXT = 'Boggle Menu'
     START_NEW_GAME_BUTTON = 'Play Boggle!'
 
+    MENU_RULES_TEXT = 'This is boggle! A game of finding words in a random board using neighboring letters.  ' \
+                        'You can LEFT CLICK a slot to add it to your current path, RIGHT CLICK any slot to submit' \
+                      'your current word (If the word is in our dictionary your score will increase, how exciting!). ' \
+                        'and use the MIDDLE CLICK on any part of the board to toggle the used words view. Good luck!'
+
 # TODO - Add more words
-WORDS = ['BALL', 'TEE', 'FLIP', 'A']
+WORDS = ['BALL', 'TEE', 'FLIP', 'A', 'B', 'C']
 
 class MenuUI:
     def __init__(self):
@@ -35,10 +53,10 @@ class MenuUI:
         # Create the Tkinter root window
         root = tk.Tk()
         # Get the screen width and height
-        width = root.winfo_screenwidth()
-        height = root.winfo_screenheight()
+        self.width = root.winfo_screenwidth()
+        self.height = root.winfo_screenheight()
         # Set the size of the window to be half of the screen width and height
-        root.geometry(f'{width // 4}x{height // 4}')
+        root.geometry(f'{self.width // 4}x{self.height // 4}')
         # Set the title of the window
         root.title(MenuUIConstants.MENU_TITLE_TEXT)
         return root
@@ -47,7 +65,12 @@ class MenuUI:
         # Create the button that opens the new window
         new_window_button = tk.Button(self.root, text=MenuUIConstants.START_NEW_GAME_BUTTON,
                                       command=self.start_new_game)
-        new_window_button.pack(expand=True, padx=0, pady=0)
+        new_window_button.grid(row=0, column=0)
+        self.root.grid_columnconfigure(0, weight=1)
+
+        rules_label = tk.Label(self.root, text=MenuUIConstants.MENU_RULES_TEXT, wraplength=self.width // 2)
+        rules_label.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
+        self.root.grid_rowconfigure(1, weight=1)
 
     def start_new_game(self):
         # Create a new Toplevel window
@@ -92,14 +115,24 @@ class BoggleGame:
         if word in self.get_words() and not word in self.get_used_words():
             self.add_path_to_score(word)
             return True
+
+        self.reset_curr_path()
         return False
+
+
+    def reset_curr_path(self):
+        self.curr_path = list()
 
     def calc_path_score(self) -> int:
         return len(self.curr_path) ** 2
     def add_path_to_score(self, word: str):
+        """
+        Assuming the current path is valid when this function is called. Increases the score according to the rules,
+        adds the current word to the used words set and resets the current path
+        """
         self.used_words.add(word)
         self._score += self.calc_path_score()
-        self.curr_path = set()
+        self.reset_curr_path()
 
     def get_score(self) -> int:
         return self._score
@@ -127,16 +160,14 @@ class BoggleGameController:
         self.timer()
 
     def timer(self):
-        # TODO - Finish me
         if self.time > 0:
             self.time -= 1
-            text = f"{GameUIConstants.TIMER_LABEL_TEXT} {self.time}"
-            self.gui.set_timer(text)
+            self.gui.set_timer(self.time)
             # Runs this function again in 1 second
             self.gui.get_window().after(1000, self.timer)
         else:
-            # Updating the function in real time
-            self.button_clicked = lambda *args: print('Can\'t do shit bruv')
+            # Stop receiving user input
+            self.finish_game()
 
     def board_button_clicked(self, location: Location):
         if self.game.add_location_to_path(location):
@@ -151,7 +182,12 @@ class BoggleGameController:
         self.gui.set_curr_word(self.game.get_curr_word())
         self.gui.set_timer(self.time)
         self.gui.set_score(self.game.get_score())
-        # self.gui.set_used_word(self.game.get_used_words())
+        self.gui.set_used_words(self.game.get_used_words())
+
+    def finish_game(self):
+        empty_lambda = lambda *args, **kwargs: None
+        self.gui.set_submit_word_action(empty_lambda)
+        self.gui.set_board_button_function(empty_lambda)
 
 
 class GameUI:
@@ -159,14 +195,16 @@ class GameUI:
         # Set the title of the window
         new_window.title(GameUIConstants.BOGGLE_GAME_TITLE)
         # Set the size of the window
-        new_window.geometry('200x200')  # Width x Height
+        new_window.geometry(GameUIConstants.GAME_WINDOW_GEOMETRY)  # Width x Height
 
         self.window = new_window
         self.board = board._board
+        self.prev_click = None
 
         self.init_board()
         self.init_score()
         self.init_timer_label()
+        self.init_used_words_container()
 
     def init_board(self):
         # Configure the rows and columns to fill the window
@@ -178,10 +216,16 @@ class GameUI:
         # Create buttons for each item on the game board
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
-                b = tk.Button(self.window, text=self.board[i][j], command=lambda loc=Location(i, j): self.board_button_clicked(loc),
+                button = tk.Button(self.window, text=self.board[i][j],
                               padx=0, pady=0, width=GameUIConstants.BOARD_BUTTON_SIZE,
                               height=GameUIConstants.BOARD_BUTTON_SIZE)
-                b.grid(row=i + 1, column=j, sticky="nsew")
+
+                # Configuring the default button action command
+                button.config(command=lambda loc=Location(i, j): self.board_button_clicked(loc))
+                # And the right click button action command
+                button.bind(GameUIConstants.BUTTON_RIGHT_CLICK_EVENT, lambda event: self.submit_word())
+                button.bind(GameUIConstants.BUTTON_MIDDLE_CLICK_EVENT, lambda event: self.toggle_used_words())
+                button.grid(row=i + 1, column=j, sticky="nsew")
 
     def init_timer_label(self):
         # Create the timer label
@@ -192,6 +236,14 @@ class GameUI:
         # Create the score label
         self.score_label = tk.Label(self.window, text=f"{GameUIConstants.SCORE_LABEL_TEXT} {GameUIConstants.DEFAULT_SCORE}")
         self.score_label.grid(row=0, column=0, sticky="nsew")
+
+    def init_used_words_container(self):
+        self.used_words_notebook = ttk.Notebook(self.window)
+        self.show_used_words()
+        self.used_words_frame = ttk.Frame(self.used_words_notebook)
+        self.used_words_list = tk.Listbox(self.used_words_frame)
+        self.used_words_list.pack(fill=tk.BOTH, expand=True)
+        self.used_words_notebook.add(self.used_words_frame, text=GameUIConstants.USED_WORDS_TITLE_TEXT)
 
     def get_window(self) -> Toplevel:
         return self.window
@@ -205,9 +257,31 @@ class GameUI:
     def set_curr_word(self, word: str):
         self.get_window().title(word)
 
-    def set_used_word(self, words: Iterable[str]):
-        # TODO - Me
-        raise NotImplementedError
+    def set_used_words(self, words: Iterable[str]):
+        self.used_words_list.delete(0, tk.END)
+        self.used_words_list.insert(tk.END, *words)
+        self.used_words_list.pack()
+
+    def show_used_words(self):
+        self.used_words_showing = True
+        self.used_words_notebook.grid(row=0, column=len(self.board[0]), rowspan=len(self.board) + 1,
+                                      padx=5, pady=5, sticky="nsew")
+
+    def hide_used_words(self):
+        self.used_words_showing = False
+        self.used_words_notebook.grid_forget()
+
+    def toggle_used_words(self):
+        if self.used_words_showing:
+            self.hide_used_words()
+        else:
+            self.show_used_words()
+
+    def board_button_clicked(self, button_location: Location):
+        pass
+
+    def submit_word(self):
+        print('submit word')
 
     def set_board_button_function(self, func):
         self.board_button_clicked = func
