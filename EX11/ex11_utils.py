@@ -71,6 +71,13 @@ class BoardObject:
         return ''.join(self.get_location(location) for location in locations)
 
 
+
+def load_boggle_dictionary(file_name : str) -> Iterable[str]:
+    with open(file_name,'r') as f:
+        words = [line.strip() for line in f.readlines()]
+        set_words = set(words)
+        return set_words
+
 @lru_cache
 def create_partial_words_from_word(word: str) -> Set[str]:
     return {word[:i] for i in range(1, len(word) + 1)}
@@ -187,6 +194,12 @@ def add_results(board: BoardObject, all_paths: list[Path], cur_results: List[Pat
         words_chosen.append(word)
 
 
+
+def calcuate_longest_word(words):
+    return max(map(lambda word : len(word), words))
+
+
+
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     board: BoardObject = BoardObject(board)
     words_chosen = []
@@ -194,7 +207,7 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
 
     partial_word_set = create_partial_words(words)
 
-    for n in range(board.rows * board.cols, 0, - 1):
+    for n in range(calcuate_longest_word(words), 0, - 1):
         cur_results = find_length_n_paths_with_options(n, board.get_board(), words, partial_word_set)
         add_results(board, all_paths, cur_results, words_chosen)
     return all_paths

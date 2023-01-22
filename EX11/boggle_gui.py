@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import tkinter as tk
 from tkinter import Toplevel, ttk
 from typing import List, Set, Iterable
-
+from ex11_utils import *
 from game_objects import Board, Location, Path
 from boggle_board_randomizer import randomize_board
 
@@ -41,7 +41,7 @@ class MenuUIConstants:
                         'and use the MIDDLE CLICK on any part of the board to toggle the used words view. Good luck!'
 
 # TODO - Add more words
-WORDS = ['BALL', 'TEE', 'FLIP', 'A', 'B', 'C']
+# WORDS = ['BALL', 'TEE', 'FLIP', 'A', 'B', 'C']
 
 class MenuUI:
     def __init__(self):
@@ -83,9 +83,7 @@ class MenuUI:
 class BoggleGame:
     def __init__(self, board: Board, words: Iterable[str]):
         self.board = board
-
         self._words = words
-
         self._score = 0
         self.curr_path: Path = []
         self.used_words: Set[str] = set()
@@ -107,12 +105,15 @@ class BoggleGame:
             self.curr_path.append(location)
             return True
         return False
+
+
     def get_curr_word(self) -> str:
         return self.board.word_from_locations(self.curr_path)
 
     def finish_word(self) -> bool:
         word = self.get_curr_word()
-        if word in self.get_words() and not word in self.get_used_words():
+        if word in self.get_words() and (not word in self.get_used_words()):
+            # add word to used words
             self.add_path_to_score(word)
             return True
 
@@ -125,6 +126,7 @@ class BoggleGame:
 
     def calc_path_score(self) -> int:
         return len(self.curr_path) ** 2
+
     def add_path_to_score(self, word: str):
         """
         Assuming the current path is valid when this function is called. Increases the score according to the rules,
@@ -139,14 +141,14 @@ class BoggleGame:
 
     def get_words(self) -> Iterable[str]:
         return self._words
+
     def get_used_words(self) -> Set[str]:
         return self.used_words
 
 class BoggleGameController:
     def __init__(self, root):
         self.board = Board(randomize_board())
-        self.game = BoggleGame(self.board, WORDS)
-
+        self.game = BoggleGame(self.board, load_boggle_dictionary("boggle_dict.txt"))
         self.init_gui(root)
         self.init_timer()
 
@@ -156,7 +158,7 @@ class BoggleGameController:
         self.gui.set_submit_word_action(self.submit_word)
 
     def init_timer(self):
-        self.time = 20
+        self.time = 300
         self.timer()
 
     def timer(self):
@@ -290,6 +292,12 @@ class GameUI:
         self.submit_word = func
 
 
-menu = MenuUI()
 
-menu.start()
+if __name__ == '__main__':
+    # print(load_boggle_dictionary("boggle_dict.txt")
+
+    menu = MenuUI()
+
+    menu.start()
+
+
