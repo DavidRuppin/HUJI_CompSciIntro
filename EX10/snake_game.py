@@ -61,9 +61,14 @@ class SnakeGame:
 
     def handle_snake_movement(self):
         if self.__key_clicked == 'Left':
-            self.snake.rotate_left()
+            self.snake.look_left()
         elif self.__key_clicked == 'Right':
-            self.snake.rotate_right()
+            self.snake.look_right()
+        elif self.__key_clicked == 'Up':
+            self.snake.look_up()
+        elif self.__key_clicked == 'Down':
+            self.snake.look_down()
+
 
         self.move_snake()
 

@@ -71,14 +71,14 @@ class BoardObject:
         return ''.join(self.get_location(location) for location in locations)
 
 
-
+@lru_cache(maxsize=1024*10)
 def load_boggle_dictionary(file_name : str) -> Iterable[str]:
     with open(file_name,'r') as f:
         words = [line.strip() for line in f.readlines()]
         set_words = set(words)
         return set_words
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def create_partial_words_from_word(word: str) -> Set[str]:
     return {word[:i] for i in range(1, len(word) + 1)}
 
@@ -185,7 +185,7 @@ def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path
     return paths
 
 
-def add_results(board: BoardObject, all_paths: list[Path], cur_results: List[Path], words_chosen: List[str]):
+def add_results(board: BoardObject, all_paths: List[Path], cur_results: List[Path], words_chosen: List[str]):
     for path in cur_results:
         word = board.word_from_locations(path)
         if word in words_chosen:

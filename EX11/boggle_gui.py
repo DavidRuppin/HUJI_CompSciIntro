@@ -5,8 +5,9 @@ Web Pages Used: https://web.archive.org/web/20190515013614id_/http://infohost.nm
 from dataclasses import dataclass
 import tkinter as tk
 from tkinter import Toplevel, ttk
-from typing import List, Set, Iterable
-from ex11_utils import *
+from typing import Iterable, Set
+
+from EX11.ex11_utils import load_boggle_dictionary
 from game_objects import Board, Location, Path
 from boggle_board_randomizer import randomize_board
 
@@ -39,9 +40,6 @@ class MenuUIConstants:
                         'You can LEFT CLICK a slot to add it to your current path, RIGHT CLICK any slot to submit' \
                       'your current word (If the word is in our dictionary your score will increase, how exciting!). ' \
                         'and use the MIDDLE CLICK on any part of the board to toggle the used words view. Good luck!'
-
-# TODO - Add more words
-# WORDS = ['BALL', 'TEE', 'FLIP', 'A', 'B', 'C']
 
 class MenuUI:
     def __init__(self):

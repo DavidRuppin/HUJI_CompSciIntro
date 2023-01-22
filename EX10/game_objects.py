@@ -27,6 +27,11 @@ class Snake(HasGetLocations, DirectionalObject):
                                            Location(-1, 0): Location(0, -1),
                                            Location(1, 0): Location(0, 1)}
 
+    DIRECTIONS = {'up': Location(1, 0),
+                  'down': Location(-1, 0),
+                  'left': Location(0, -1),
+                  'right': Location(0, 1)}
+
     def __init__(self, head: Location, direction: Location = Location(1, 0)):
         self._head = head
         self._bod: List[Location] = [head + direction * -2, head + direction * -1]
@@ -37,6 +42,10 @@ class Snake(HasGetLocations, DirectionalObject):
         @param direction: A directional vector
         """
         self._dir = direction
+
+    def can_change_direction_to(self, direction):
+        return not self._dir == self.DIRECTION_TO_RIGHT_ROTATE_DIRECTION.get(
+            self.DIRECTION_TO_RIGHT_ROTATE_DIRECTION.get(direction))
 
     def get_direction(self) -> Location:
         return self._dir
@@ -55,6 +64,22 @@ class Snake(HasGetLocations, DirectionalObject):
         """
         for _ in range(3):
             self.rotate_right()
+
+    def look_up(self):
+        if self.can_change_direction_to(self.set_direction(Snake.DIRECTIONS.get('up'))):
+            self.set_direction(Snake.DIRECTIONS.get('up'))
+
+    def look_down(self):
+        if self.can_change_direction_to(self.set_direction(Snake.DIRECTIONS.get('down'))):
+            self.set_direction(Snake.DIRECTIONS.get('down'))
+
+    def look_left(self):
+        if self.can_change_direction_to(self.set_direction(Snake.DIRECTIONS.get('left'))):
+            self.set_direction(Snake.DIRECTIONS.get('left'))
+
+    def look_right(self):
+        if self.can_change_direction_to(self.set_direction(Snake.DIRECTIONS.get('right'))):
+            self.set_direction(Snake.DIRECTIONS.get('right'))
 
     def move(self, do_pop: bool = True) -> Union[Location, None]:
         """Moves the snake in its current direction
