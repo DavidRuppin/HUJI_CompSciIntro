@@ -4,13 +4,13 @@
 # EXERCISE : intro2cs ex11 2022-2023
 #################################################################
 import tkinter as tk
-from typing import Iterable, Set
+from dataclasses import dataclass
+from typing import Iterable, Set, Tuple
 
 from boggle_board_randomizer import randomize_board
 from boggle_game_ui import GameUI
 from ex11_utils import load_boggle_dictionary
 from game_objects import Board, Location, Path
-
 
 class BoggleGame:
     def __init__(self, board: Board, words: Iterable[str]):
@@ -42,15 +42,16 @@ class BoggleGame:
     def get_curr_word(self) -> str:
         return self.board.word_from_locations(self.curr_path)
 
-    def finish_word(self) -> bool:
+    def finish_word(self) -> Tuple[bool, Path]:
+        curr_path = self.curr_path
         word = self.get_curr_word()
         if word in self.get_words() and (not word in self.get_used_words()):
             # add word to used words
             self.add_path_to_score(word)
-            return True
+            return (True, curr_path)
 
         self.reset_curr_path()
-        return False
+        return (False, curr_path)
 
 
     def reset_curr_path(self):
@@ -108,7 +109,11 @@ class BoggleGameController:
             self.update_ui()
 
     def submit_word(self):
-        self.game.finish_word()
+        success, path = self.game.finish_word()
+        if success:
+            self.gui.animate_path(path, 'green')
+        else:
+            self.gui.animate_path(path, 'red')
         self.update_ui()
 
 

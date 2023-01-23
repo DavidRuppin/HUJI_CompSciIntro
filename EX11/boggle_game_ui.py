@@ -8,13 +8,13 @@ import tkinter as tk
 
 from tkinter import ttk
 from dataclasses import dataclass
-from game_objects import Board, Location
-from typing import Iterable, Set
+from game_objects import Board, Location, Path
+from typing import Iterable, Set, List
 
 
 @dataclass
 class GameUIConstants:
-    GAME_WINDOW_GEOMETRY = '400x400'
+    GAME_WINDOW_GEOMETRY = '600x600'
     BOGGLE_GAME_TITLE = 'Current Word'
 
     DEFAULT_TIMER = 180
@@ -28,6 +28,7 @@ class GameUIConstants:
     BOARD_BUTTON_SIZE = 5
     BUTTON_MIDDLE_CLICK_EVENT = '<Button-2>'
     BUTTON_RIGHT_CLICK_EVENT = '<Button-3>'
+    DEFAULT_BUTTON_BACKGROUND_COLOR = 'white'
 
 
 class GameUI:
@@ -35,11 +36,15 @@ class GameUI:
         # Set the title of the window
         new_window.title(GameUIConstants.BOGGLE_GAME_TITLE)
         # Set the size of the window
+        # TODO - Change this
         new_window.geometry(GameUIConstants.GAME_WINDOW_GEOMETRY)  # Width x Height
 
         self.window = new_window
         self.board = board._board
         self.prev_click = None
+
+        # Used for animating the buttons
+        self.board_buttons: List[List[tk.Button]] = []
 
         self.init_board()
         self.init_score()
@@ -55,17 +60,19 @@ class GameUI:
 
         # Create buttons for each item on the game board
         for i in range(len(self.board)):
+            board_button_row = []
             for j in range(len(self.board[i])):
                 button = tk.Button(self.window, text=self.board[i][j],
                               padx=0, pady=0, width=GameUIConstants.BOARD_BUTTON_SIZE,
                               height=GameUIConstants.BOARD_BUTTON_SIZE)
-
+                board_button_row.append(button)
                 # Configuring the default button action command
                 button.config(command=lambda loc=Location(i, j): self.board_button_clicked(loc))
                 # And the right click button action command
                 button.bind(GameUIConstants.BUTTON_RIGHT_CLICK_EVENT, lambda event: self.submit_word())
                 button.bind(GameUIConstants.BUTTON_MIDDLE_CLICK_EVENT, lambda event: self.toggle_used_words())
                 button.grid(row=i + 1, column=j, sticky="nsew")
+            self.board_buttons.append(board_button_row)
 
     def init_timer_label(self):
         # Create the timer label
@@ -129,3 +136,16 @@ class GameUI:
     def set_submit_word_action(self, func):
         self.submit_word = func
 
+    def change_color(self, path: Path, color: str):
+        for row, col in path:
+            btn = self.board_buttons[row][col]
+            btn.config(bg=color)
+        self.window.after(500, self.change_color_back)
+
+    def change_color_back(self):
+        for row in self.board_buttons:
+            for btn in row:
+                btn.config(bg=GameUIConstants.DEFAULT_BUTTON_BACKGROUND_COLOR)
+
+    def animate_path(self, path: Path, color: str):
+        self.change_color(path, color)
