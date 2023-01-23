@@ -1,6 +1,6 @@
 #################################################################
 # FILE : game_objects.py
-# WRITER : David Ruppin, ruppin, 322296336
+# WRITER : David Ruppin, Roy Mainfeld, ruppin, 322296336
 # EXERCISE : intro2cs ex11 2022-2023
 #################################################################
 from typing import NamedTuple

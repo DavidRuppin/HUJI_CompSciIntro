@@ -21,7 +21,7 @@ class BoardObject:
     def get_num_cols(self) -> int:
         return self.cols
 
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def get_location_neighbors(self, location: Location):
         neighbors = []
 
@@ -198,70 +198,3 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
         cur_results = find_length_n_paths_with_options(n, board.get_board(), words, partial_word_set)
         add_results(board, all_paths, cur_results, words_chosen)
     return all_paths
-
-
-if __name__ == '__main__':  # LED", "SITE", "KIT", "WIELD
-    BOARD1 = [["I", "S", "W", "L"],
-              ["I", "I", "T", "R"],
-              ["E", "K", "E", "D"],
-              ["A", "M", "L", "J"]]
-    BOARD2 = [["I", "E", "E", "Y"],
-              ["E", "B", "I", "W"],
-              ["A", "V", "E", "R"],
-              ["U", "W", "A", "P"]]
-    BOARD3 = [["?", "A", "?", "?"],
-              ["?", "B", "?", "A"],
-              ["?", "C", "B", "?"],
-              ["?", "?", "?", "?"]]
-
-    from pprint import pp
-
-    board = BOARD1
-    n = 1
-    words = []
-
-
-    def a():
-        board = [["I", "E", "E", "Y"],
-                 ["E", "B", "I", "W"],
-                 ["A", "V", "E", "R"],
-                 ["U", "W", "A", "P"]]
-
-        words = ['EAVE', 'BEAU', 'BEAR', 'WEIR', 'WIVE', 'WIVE',
-                 'WIRE', 'WEAR', 'WEIR', 'WRAP', 'AVER', 'VIEW',
-                 'VIEW', 'VIEW', 'EAVE', 'REAP', 'RAVE', 'RAVE',
-                 'RAPE', 'WAVE', 'WAVE', 'WAVE', 'WAVE', 'WARE',
-                 'WARP', 'WEAR', 'WEIR', 'AVER', 'PEAR', 'PAVE',
-                 'PAVE', 'PARE']
-
-        paths = []
-        from pprint import pprint as pp
-
-        pp(find_length_n_paths_with_options(4, board, words))
-        # print(get_n_sized_paths_from_location(board, [(1, 1)], words, 3))
-
-
-    def b():
-        n = 7
-        board = [["X", "Z", "Y", "X"],
-                 ["Y", "AB", "X", "Z"],
-                 ["X", "C", "BA", "?"],
-                 ["?", "?", "?", "?"]]
-        words = ['ZABCBAZ', 'ZBACABZ', 'XYXCXYX']
-
-        print(find_length_n_paths_with_options(n, board, words))
-
-
-    def palindrome():
-        board = BOARD3
-        n = 5
-        words = ['ABCBA']
-        pp(find_length_n_paths_with_options(n, board, words))
-
-
-    def happy():
-        n, board, words = 4, BOARD1, ["LED", "SITE", "KIT", "WIELD"]
-        pp(find_length_n_paths_with_options(n, board, words))
-
-
-    happy()
