@@ -290,12 +290,10 @@ class GameUI:
         self.submit_word = func
 
 
-
-if __name__ == '__main__':
-    # print(load_boggle_dictionary("boggle_dict.txt")
-
+def play_boggle():
     menu = MenuUI()
-
     menu.start()
 
+if __name__ == '__main__':
+    play_boggle()
 

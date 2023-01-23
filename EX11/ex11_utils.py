@@ -56,11 +56,6 @@ class BoardObject:
 
     def is_path_valid(self, path: Path, words: Iterable[str]) -> Optional[str]:
         word = self.word_from_locations(path)
-        unique_path = set(path)
-        # checks to see if the origin path had duplicate locations
-        if len(path) != len(unique_path):
-            return None
-
         return word if word in words else None
 
     def get_location(self, location: Location) -> str:
@@ -90,25 +85,17 @@ def create_partial_words(words: Iterable[str]) -> Set[str]:
     return res
 
 
-# def create_partial_words(words: Iterable[str]) -> Set[str]:
-#     max_length = max(map(lambda x: len(x), words))
-#     result = set()
-#     for iter in range(1, max_length + 1):
-#         setter = (set(map(lambda x: x[:iter], words)))
-#         result = result.union(setter)
-#     return result
-
-
 def get_n_sized_paths_from_location(board: BoardObject, locations: Path, partial_word_set: Set[str],
                                     words: Iterable[str], count,
                                     paths: List[Path]) -> List[Path]:
     # Get all the paths from the last location in the @locations list [which is the tail of the current path]
     if count == 1:
-        if is_valid_path(board._board, locations, words):
+        if board.is_path_valid(locations, words):
             paths.append([*locations])
         return
 
     for neighbor in board.get_location_neighbors(locations[-1]):
+        # Skipping if the location is already used in the current path
         if neighbor in locations:
             continue
 
