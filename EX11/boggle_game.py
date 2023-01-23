@@ -9,7 +9,6 @@ from typing import Iterable, Set, Tuple
 
 from boggle_board_randomizer import randomize_board
 from boggle_game_ui import GameUI
-from boggle_menu_ui import MenuUI
 from ex11_utils import load_boggle_dictionary
 from game_objects import Board, Location, Path
 
@@ -136,5 +135,6 @@ class BoggleGameController:
 
 
 if __name__ == '__main__':
+    from boggle_menu_ui import MenuUI
     menu = MenuUI()
     menu.start()

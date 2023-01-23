@@ -32,7 +32,7 @@ class MenuUI:
         self.width = root.winfo_screenwidth()
         self.height = root.winfo_screenheight()
         # Set the size of the window to be half of the screen width and height
-        root.geometry(f'{self.width // 4}x{self.height // 4}')
+        root.geometry(f'{self.width // 2}x{self.height // 2}')
         # Set the title of the window
         root.title(MenuUIConstants.MENU_TITLE_TEXT)
         return root
