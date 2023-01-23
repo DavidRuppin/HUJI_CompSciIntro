@@ -21,7 +21,7 @@ class BoardObject:
     def get_num_cols(self) -> int:
         return self.cols
 
-    @lru_cache(maxsize=1024)
+    @lru_cache()
     def get_location_neighbors(self, location: Location):
         neighbors = []
 
@@ -66,14 +66,14 @@ class BoardObject:
         return ''.join(self.get_location(location) for location in locations)
 
 
-@lru_cache(maxsize=1024*10)
+
 def load_boggle_dictionary(file_name : str) -> Iterable[str]:
     with open(file_name,'r') as f:
         words = [line.strip() for line in f.readlines()]
         set_words = set(words)
         return set_words
 
-@lru_cache(maxsize=1024)
+@lru_cache()
 def create_partial_words_from_word(word: str) -> Set[str]:
     return {word[:i] for i in range(1, len(word) + 1)}
 
@@ -84,10 +84,12 @@ def create_partial_words(words: Iterable[str]) -> Set[str]:
         res.update(create_partial_words_from_word(word))
     return res
 
-
 def get_n_sized_paths_from_location(board: BoardObject, locations: Path, partial_word_set: Set[str],
                                     words: Iterable[str], count,
                                     paths: List[Path]) -> List[Path]:
+    if type(words) is not set:
+        words = set(words)
+
     # Get all the paths from the last location in the @locations list [which is the tail of the current path]
     if count == 1:
         if board.is_path_valid(locations, words):
@@ -95,7 +97,6 @@ def get_n_sized_paths_from_location(board: BoardObject, locations: Path, partial
         return
 
     for neighbor in board.get_location_neighbors(locations[-1]):
-        # Skipping if the location is already used in the current path
         if neighbor in locations:
             continue
 
@@ -129,7 +130,7 @@ def is_valid_path(board: Board, path: Path, words: Iterable[str]) -> Optional[st
 
 
 def find_length_n_paths(n: int, board: Board, words: Iterable[str]) -> List[Path]:
-    return find_length_n_paths_with_options(n, board, words)
+    return find_length_n_paths_with_options(n, board, set(words))
 
 
 def find_length_n_paths_with_options(n: int, board: Board, words: Iterable[str], partial_word_set=None) -> List[Path]:
