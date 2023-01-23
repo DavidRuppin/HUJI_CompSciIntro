@@ -36,7 +36,6 @@ class GameUI:
         # Set the title of the window
         new_window.title(GameUIConstants.BOGGLE_GAME_TITLE)
         # Set the size of the window
-        # TODO - Change this
         new_window.geometry(GameUIConstants.GAME_WINDOW_GEOMETRY)  # Width x Height
 
         self.window = new_window

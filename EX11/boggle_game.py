@@ -9,8 +9,14 @@ from typing import Iterable, Set, Tuple
 
 from boggle_board_randomizer import randomize_board
 from boggle_game_ui import GameUI
+from boggle_menu_ui import MenuUI
 from ex11_utils import load_boggle_dictionary
 from game_objects import Board, Location, Path
+
+@dataclass
+class BoggleConstants:
+    SUCCESSFUL_WORD_ANIMATION_COLOR = 'green'
+    FAILED_WORD_ANIMATION_COLOR = 'red'
 
 class BoggleGame:
     def __init__(self, board: Board, words: Iterable[str]):
@@ -111,9 +117,9 @@ class BoggleGameController:
     def submit_word(self):
         success, path = self.game.finish_word()
         if success:
-            self.gui.animate_path(path, 'green')
+            self.gui.animate_path(path, BoggleConstants.SUCCESSFUL_WORD_ANIMATION_COLOR)
         else:
-            self.gui.animate_path(path, 'red')
+            self.gui.animate_path(path, BoggleConstants.FAILED_WORD_ANIMATION_COLOR)
         self.update_ui()
 
 
@@ -130,6 +136,5 @@ class BoggleGameController:
 
 
 if __name__ == '__main__':
-    from boggle_menu_ui import MenuUI
     menu = MenuUI()
     menu.start()
