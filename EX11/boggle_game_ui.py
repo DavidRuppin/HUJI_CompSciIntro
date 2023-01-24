@@ -139,15 +139,21 @@ class GameUI:
         self.submit_word = func
 
     def change_path_color(self, path: Path, color: str):
-        for row, col in path:
+        if path:
+            row, col = path[0]
             btn = self.board_buttons[row][col]
             btn.config(bg=color)
-        self.window.after(500, self.reset_path_color)
+            self.window.after(100, self.change_path_color, path[1:], color)
+        else:
+            self.window.after(500, self.reset_path_color)
+
+    def reset_button_color(self, btn):
+        btn.config(bg=GameUIConstants.DEFAULT_BUTTON_BACKGROUND_COLOR)
 
     def reset_path_color(self):
         for row in self.board_buttons:
             for btn in row:
-                btn.config(bg=GameUIConstants.DEFAULT_BUTTON_BACKGROUND_COLOR)
+                self.reset_button_color(btn)
 
     def animate_path(self, path: Path, color: str):
         self.change_path_color(path, color)
