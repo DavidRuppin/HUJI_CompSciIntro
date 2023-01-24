@@ -148,3 +148,8 @@ class GameUI:
 
     def animate_path(self, path: Path, color: str):
         self.change_color(path, color)
+
+
+    def show_game_over_message(self):
+        game_over_label = tk.Label(self.window, text="Game Over\n (press play boggle to start a new game)", font=("Helvetica", 15))
+        game_over_label.place(relx=0.5, rely=0.5, anchor="center")

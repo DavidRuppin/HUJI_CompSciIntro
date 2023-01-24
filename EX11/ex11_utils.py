@@ -79,6 +79,12 @@ def create_partial_words_from_word(word: str) -> Set[str]:
 
 
 def create_partial_words(words: Iterable[str]) -> Set[str]:
+    """
+    returns : a set of all prefixes of words that exists in the boggle_dict.txt file
+    the purpose is to optimize the find_n_length_paths function so that we can cancel brances
+    before the end. during find_n_length_paths we create partial words, but of the partial word is not in
+    the set of prefixes, we can stop and not check all the variations of this word\path.
+    """
     res = set()
     for word in words:
         res.update(create_partial_words_from_word(word))
@@ -174,6 +180,13 @@ def find_length_n_words(n: int, board: Board, words: Iterable[str]) -> List[Path
 
 
 def add_results(board: BoardObject, all_paths: List[Path], cur_results: List[Path], words_chosen: List[str]):
+    """
+    this function checks if the new paths that were found were paths for words that have been calcuated
+    and added already to the final list of paths. It doesnt have to check if the score for the current path
+    is bigger from the path that exists already because the outer loop in max score iterated from the longest
+    path options to the shortest so if the word that represents the path already exists it means
+    that for this words there is already a longer path and therefore the current path shoud not be added.
+    """
     for path in cur_results:
         word = board.word_from_locations(path)
         if word in words_chosen:
@@ -183,19 +196,25 @@ def add_results(board: BoardObject, all_paths: List[Path], cur_results: List[Pat
 
 
 
-def calcuate_longest_word(words):
+def calcuate_longest_word(words: Iterable[str]):
+    """
+    checks which is the longest word so the function max score won't need to iterate through
+    the longest possible path in the board
+    """
     return max(map(lambda word : len(word), words))
 
 
 
 def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
+
     board: BoardObject = BoardObject(board)
     words_chosen = []
     all_paths = []
 
     partial_word_set = create_partial_words(words)
-
+    # every iteration return and add all possible paths with length of "n"
     for n in range(calcuate_longest_word(words), 0, - 1):
         cur_results = find_length_n_paths_with_options(n, board.get_board(), words, partial_word_set)
+        # add only the paths that returns max result
         add_results(board, all_paths, cur_results, words_chosen)
     return all_paths

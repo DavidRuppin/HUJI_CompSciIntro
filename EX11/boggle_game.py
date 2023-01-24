@@ -28,10 +28,11 @@ class BoggleGame:
     def _can_add_to_curr_path(self, location: Location) -> bool:
         if not self.curr_path:
             return True
-
+        # checks to see if the location is in the board
         if not self.board.is_location_in_board(location):
             return False
 
+        #checks to see if the location was already picked and if the location is a neighbor of the last locatio picked
         if location not in self.curr_path and self.board.are_neighbors(self.curr_path[-1], location):
                 return True
 
@@ -45,9 +46,16 @@ class BoggleGame:
 
 
     def get_curr_word(self) -> str:
+        """
+        returns the word in respect to the current path
+        """
         return self.board.word_from_locations(self.curr_path)
 
     def finish_word(self) -> Tuple[bool, Path]:
+        """
+        returns (success, path) success is true if the word was good by the laws of the game
+        else false, path is the path of the word.
+        """
         curr_path = self.curr_path
         word = self.get_curr_word()
         if word in self.get_words() and (not word in self.get_used_words()):
@@ -96,7 +104,7 @@ class BoggleGameController:
         self.gui.set_submit_word_action(self.submit_word)
 
     def init_timer(self):
-        self.time = 300
+        self.time = 10
         self.timer()
 
     def timer(self):
@@ -132,6 +140,8 @@ class BoggleGameController:
         empty_lambda = lambda *args, **kwargs: None
         self.gui.set_submit_word_action(empty_lambda)
         self.gui.set_board_button_function(empty_lambda)
+        self.gui.show_game_over_message()
+
 
 
 if __name__ == '__main__':

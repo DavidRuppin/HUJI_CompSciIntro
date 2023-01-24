@@ -15,7 +15,7 @@ https://github.com/TwoUnderscorez/huji-intro2cs1-ex12
 from unittest.loader import TestLoader
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
-from ex11_utils import is_valid_path, find_length_n_paths_with_options, find_length_n_words, \
+from ex11_utils import is_valid_path, find_length_n_paths, find_length_n_words, \
     max_score_paths
 import unittest
 from gzip import decompress
@@ -626,7 +626,7 @@ class Ex12Tests(unittest.TestCase):
         ]
         for tc in testcases + (random_board_cases if self.random_board_tests else []):
             with self.subTest(tc['name']):
-                actual = find_length_n_paths_with_options(**tc["input"])
+                actual = find_length_n_paths(**tc["input"])
                 self.assertListEqualWithoutOrder(tc['expected'], actual)
                 self.dot()
         self.dot(True)
