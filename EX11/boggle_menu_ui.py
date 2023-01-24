@@ -5,7 +5,7 @@ Web Pages Used: https://web.archive.org/web/20190515013614id_/http://infohost.nm
 from dataclasses import dataclass
 import tkinter as tk
 
-from boggle_game import BoggleGameController
+from boggle import BoggleGameController
 
 
 

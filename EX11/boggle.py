@@ -1,5 +1,5 @@
 #################################################################
-# FILE : boggle_game.py
+# FILE : boggle.py
 # WRITER : David Ruppin, ruppin, 322296336
 # EXERCISE : intro2cs ex11 2022-2023
 #################################################################
@@ -16,6 +16,8 @@ from game_objects import Board, Location, Path
 class BoggleConstants:
     SUCCESSFUL_WORD_ANIMATION_COLOR = 'green'
     FAILED_WORD_ANIMATION_COLOR = 'red'
+    GAME_TIME_IN_SECONDS = 180
+    DICTIONARY_FILE_PATH = 'boggle_dict.txt'
 
 class BoggleGame:
     def __init__(self, board: Board, words: Iterable[str]):
@@ -94,7 +96,7 @@ class BoggleGame:
 class BoggleGameController:
     def __init__(self, root):
         self.board = Board(randomize_board())
-        self.game = BoggleGame(self.board, load_boggle_dictionary("boggle_dict.txt"))
+        self.game = BoggleGame(self.board, load_boggle_dictionary(BoggleConstants.DICTIONARY_FILE_PATH))
         self.init_gui(root)
         self.init_timer()
 
@@ -104,7 +106,7 @@ class BoggleGameController:
         self.gui.set_submit_word_action(self.submit_word)
 
     def init_timer(self):
-        self.time = 10
+        self.time = BoggleConstants.GAME_TIME_IN_SECONDS
         self.timer()
 
     def timer(self):

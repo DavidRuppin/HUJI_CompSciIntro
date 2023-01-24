@@ -5,7 +5,6 @@ Board = List[List[str]]
 Path = List[Tuple[int, int]]
 Location = Tuple[int, int]
 
-
 class BoardObject:
     def __init__(self, board: Board):
         self._board = board

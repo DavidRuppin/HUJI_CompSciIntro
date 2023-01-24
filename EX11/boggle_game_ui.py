@@ -5,11 +5,11 @@
 #################################################################
 
 import tkinter as tk
-
-from tkinter import ttk
 from dataclasses import dataclass
+from tkinter import ttk
+from typing import Iterable, List
+
 from game_objects import Board, Location, Path
-from typing import Iterable, Set, List
 
 
 @dataclass
@@ -24,6 +24,7 @@ class GameUIConstants:
     SCORE_LABEL_TEXT = 'Score:'
 
     USED_WORDS_TITLE_TEXT = 'Used Words'
+    GAME_OVER_TEXT = 'Game Over!\n (Press \'Play Boggle\' in the main menu to start a new game)'
 
     BOARD_BUTTON_SIZE = 5
     BUTTON_MIDDLE_CLICK_EVENT = '<Button-2>'
@@ -33,10 +34,8 @@ class GameUIConstants:
 
 class GameUI:
     def __init__(self, new_window: tk.Toplevel, board: Board):
-        # Set the title of the window
         new_window.title(GameUIConstants.BOGGLE_GAME_TITLE)
-        # Set the size of the window
-        new_window.geometry(GameUIConstants.GAME_WINDOW_GEOMETRY)  # Width x Height
+        new_window.geometry(GameUIConstants.GAME_WINDOW_GEOMETRY)
 
         self.window = new_window
         self.board = board._board
@@ -62,28 +61,32 @@ class GameUI:
             board_button_row = []
             for j in range(len(self.board[i])):
                 button = tk.Button(self.window, text=self.board[i][j],
-                              padx=0, pady=0, width=GameUIConstants.BOARD_BUTTON_SIZE,
-                              height=GameUIConstants.BOARD_BUTTON_SIZE)
+                                   padx=0, pady=0, width=GameUIConstants.BOARD_BUTTON_SIZE,
+                                   height=GameUIConstants.BOARD_BUTTON_SIZE)
                 board_button_row.append(button)
                 # Configuring the default button action command
                 button.config(command=lambda loc=Location(i, j): self.board_button_clicked(loc))
                 # And the right click button action command
                 button.bind(GameUIConstants.BUTTON_RIGHT_CLICK_EVENT, lambda event: self.submit_word())
                 button.bind(GameUIConstants.BUTTON_MIDDLE_CLICK_EVENT, lambda event: self.toggle_used_words())
-                button.grid(row=i + 1, column=j, sticky="nsew")
+                button.grid(row=i + 1, column=j, sticky='nsew')
             self.board_buttons.append(board_button_row)
 
     def init_timer_label(self):
         # Create the timer label
-        self.timer_label = tk.Label(self.window, text=f"{GameUIConstants.TIMER_LABEL_TEXT} {GameUIConstants.DEFAULT_TIMER}")
-        self.timer_label.grid(row=0, column=1, columnspan=len(self.board[0]), sticky="nsew")
+        self.timer_label = tk.Label(self.window,
+                                    text=f'{GameUIConstants.TIMER_LABEL_TEXT} {GameUIConstants.DEFAULT_TIMER}')
+        self.timer_label.grid(row=0, column=1, columnspan=len(self.board[0]), sticky='nse')
 
     def init_score(self):
         # Create the score label
-        self.score_label = tk.Label(self.window, text=f"{GameUIConstants.SCORE_LABEL_TEXT} {GameUIConstants.DEFAULT_SCORE}")
-        self.score_label.grid(row=0, column=0, sticky="nsew")
+        self.score_label = tk.Label(self.window,
+                                    text=f'{GameUIConstants.SCORE_LABEL_TEXT} {GameUIConstants.DEFAULT_SCORE}')
+        self.score_label.grid(row=0, column=0, sticky='nsw')
 
     def init_used_words_container(self):
+        # Creates a notebook containing a single tab with the used words
+        # We used a notebook to make it  display nicely and easily collapsible at once
         self.used_words_notebook = ttk.Notebook(self.window)
         self.show_used_words()
         self.used_words_frame = ttk.Frame(self.used_words_notebook)
@@ -110,7 +113,7 @@ class GameUI:
 
     def show_used_words(self):
         self.used_words_showing = True
-        self.used_words_notebook.grid(row=0, column=len(self.board[0]), rowspan=len(self.board) + 1,
+        self.used_words_notebook.grid(row=0, column=len(self.board[0])+1, rowspan=len(self.board) + 1,
                                       padx=5, pady=5, sticky="nsew")
 
     def hide_used_words(self):
@@ -135,21 +138,20 @@ class GameUI:
     def set_submit_word_action(self, func):
         self.submit_word = func
 
-    def change_color(self, path: Path, color: str):
+    def change_path_color(self, path: Path, color: str):
         for row, col in path:
             btn = self.board_buttons[row][col]
             btn.config(bg=color)
-        self.window.after(500, self.change_color_back)
+        self.window.after(500, self.reset_path_color)
 
-    def change_color_back(self):
+    def reset_path_color(self):
         for row in self.board_buttons:
             for btn in row:
                 btn.config(bg=GameUIConstants.DEFAULT_BUTTON_BACKGROUND_COLOR)
 
     def animate_path(self, path: Path, color: str):
-        self.change_color(path, color)
-
+        self.change_path_color(path, color)
 
     def show_game_over_message(self):
-        game_over_label = tk.Label(self.window, text="Game Over\n (press play boggle to start a new game)", font=("Helvetica", 15))
+        game_over_label = tk.Label(self.window, text=GameUIConstants.GAME_OVER_TEXT, font=("Helvetica", 15))
         game_over_label.place(relx=0.5, rely=0.5, anchor="center")

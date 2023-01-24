@@ -1,2 +1,7 @@
-Added the option to play multiple games at once, thus enabling you to also view your game without needing to launch
-another instance of the game or save the files
+Bonus options:
+    1. Play multiple games at once
+            (If the timer ends, the play can start another game and keep the last one running to show off!)
+    2. Use your mouse clicks only - no buttons
+    3. Animated success and failure on word submits
+    4. Collapsible used words container - show or hide it, whichever you prefer!
+    5. A game over message is displayed when the game ends
