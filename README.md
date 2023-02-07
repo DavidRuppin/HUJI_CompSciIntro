@@ -1,3 +1,3 @@
 # HUJI intro2cs
 
-The resume for my intro2cs assignments
+The repo for my intro2cs assignments
