@@ -1,2 +1,3 @@
-# HUJI_COMP_SCI_INTRO
-You get it boi
+# HUJI intro2cs
+
+The resume for my intro2cs assignments
